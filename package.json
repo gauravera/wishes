@@ -4,7 +4,7 @@
   "description": "Boyfriend's Day personalized website with backend image storage",
   "main": "server.js",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start"
   },
