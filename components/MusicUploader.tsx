@@ -56,14 +56,33 @@ export const MusicUploader: React.FC<MusicUploaderProps> = ({
     }
   };
 
+  const MAX_SONG_BYTES = 25 * 1024 * 1024; // Up to 25 MB supported with automatic chunked upload
+
   const handleFile = (file: File) => {
-    if (file.type.startsWith('audio/') || /\.(mp3|m4a|wav|aac|ogg|opus|flac)$/i.test(file.name)) {
-      onSongChange(file);
-      if (!songTitle) {
-        onSongTitleChange(file.name.replace(/\.[^/.]+$/, ''));
-      }
-    } else {
-      alert('Please upload a valid audio file (e.g. MP3, M4A, WAV).');
+    // iPhone Safari / Files app sometimes passes empty type, video/mp4 (recorded/saved clips), or application/octet-stream
+    const isAudio =
+      !file.type ||
+      file.type.startsWith('audio/') ||
+      file.type.startsWith('video/mp4') ||
+      file.type.includes('audio') ||
+      file.type === 'application/octet-stream' ||
+      /\.(mp3|m4a|wav|aac|ogg|opus|flac|caf|aiff|alac|wma|m4r|mp4|webm|weba|mid|midi)$/i.test(file.name);
+
+    if (!isAudio) {
+      alert('Please upload a valid audio file (e.g. MP3, M4A, WAV, AAC, etc.).');
+      return;
+    }
+
+    if (file.size > MAX_SONG_BYTES) {
+      alert(
+        `Your selected song is ${formatBytes(file.size)}.\n\nPlease upload an audio file up to 20 MB.`
+      );
+      return;
+    }
+
+    onSongChange(file);
+    if (!songTitle) {
+      onSongTitleChange(file.name.replace(/\.[^/.]+$/, ''));
     }
   };
 
@@ -87,13 +106,13 @@ export const MusicUploader: React.FC<MusicUploaderProps> = ({
     >
       <label>🎵 Custom Background Song / Music (Optional)</label>
       <p className="field-hint">
-        Upload your favorite couple song, romantic melody, or acoustic track.
+        Upload your favorite couple song, romantic melody, or acoustic track (Up to 20MB supported).
       </p>
 
       <input
         ref={fileInputRef}
         type="file"
-        accept="audio/*"
+        accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.opus,.flac,.caf,.aiff,.wma,.m4r,.mp4,.webm,.weba,audio/mpeg,audio/mp3,audio/wav,audio/x-m4a,audio/aac,audio/ogg,audio/flac,audio/mp4,audio/x-aiff"
         style={{ display: 'none' }}
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -118,7 +137,9 @@ export const MusicUploader: React.FC<MusicUploaderProps> = ({
             >
               📁 Choose Audio File
             </button>
-            <div className="song-subhint">or drag &amp; drop audio file here</div>
+            <div className="song-subhint">
+              MP3, M4A, WAV, AAC, etc. (Up to 20 MB)
+            </div>
           </div>
         </div>
       ) : (

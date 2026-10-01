@@ -58,7 +58,21 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      
+      let mimeType = '';
+      if (typeof MediaRecorder !== 'undefined') {
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          mimeType = 'audio/webm;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+          mimeType = 'audio/webm';
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        } else if (MediaRecorder.isTypeSupported('audio/aac')) {
+          mimeType = 'audio/aac';
+        }
+      }
+
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
       audioChunksRef.current = [];
       setRecSeconds(0);
@@ -73,7 +87,8 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
       recorder.onstop = () => {
         if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
         stream.getTracks().forEach((track) => track.stop());
-        const finalBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const actualMime = recorder.mimeType || (mimeType || 'audio/webm');
+        const finalBlob = new Blob(audioChunksRef.current, { type: actualMime });
         onVoiceChange(finalBlob);
         setVoiceName('Recorded Voice Note');
         setVoiceDurationInfo(`${recSeconds}s recording ready`);
@@ -136,11 +151,15 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="audio/*"
+        accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.opus,.flac,.caf,.aiff,.wma,.m4r,.mp4,.webm,.weba,audio/mpeg,audio/mp3,audio/wav,audio/x-m4a,audio/aac,audio/ogg,audio/flac,audio/mp4"
         style={{ display: 'none' }}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) {
+            if (f.size > 3.8 * 1024 * 1024) {
+              alert(`Audio file is ${formatBytes(f.size)}. Please choose an audio memo under 3.8 MB.`);
+              return;
+            }
             onVoiceChange(f);
             setVoiceName(f.name);
             setVoiceDurationInfo(formatBytes(f.size));

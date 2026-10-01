@@ -22,7 +22,7 @@ function getStoragePath(): string {
       if (!fs.existsSync(tmpDir)) {
         fs.mkdirSync(tmpDir, { recursive: true });
       }
-    } catch (e) {}
+    } catch (e) { }
     return path.join(tmpDir, 'surprises.json');
   }
 
@@ -31,7 +31,7 @@ function getStoragePath(): string {
     if (!fs.existsSync(localDir)) {
       fs.mkdirSync(localDir, { recursive: true });
     }
-  } catch (e) {}
+  } catch (e) { }
   return path.join(localDir, 'surprises.json');
 }
 
@@ -45,7 +45,7 @@ export function ensureDirectories() {
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, JSON.stringify({}, null, 2), 'utf8');
     }
-  } catch (err) {}
+  } catch (err) { }
 }
 
 export function cleanupExpiredSurprises(surprises: Record<string, SurpriseData>): Record<string, SurpriseData> {
@@ -86,7 +86,7 @@ function getLocalSurprises(): Record<string, SurpriseData> {
       const parsed = JSON.parse(raw);
       result = { ...result, ...parsed };
     }
-  } catch (err) {}
+  } catch (err) { }
 
   const cleaned = cleanupExpiredSurprises(result);
   globalThis.__ECARD_CACHE__ = cleaned;
@@ -224,7 +224,7 @@ export async function saveUploadedFile(
 ): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  
+
   const ext = (path.extname(file.name) || '').toLowerCase();
   let mimeType = file.type;
   if (!mimeType || mimeType === 'application/octet-stream') {
@@ -233,10 +233,15 @@ export async function saveUploadedFile(
     else if (ext === '.gif') mimeType = 'image/gif';
     else if (ext === '.webp') mimeType = 'image/webp';
     else if (ext === '.mp3') mimeType = 'audio/mpeg';
-    else if (ext === '.webm') mimeType = 'audio/webm';
+    else if (ext === '.webm' || ext === '.weba') mimeType = 'audio/webm';
     else if (ext === '.wav') mimeType = 'audio/wav';
-    else if (ext === '.ogg') mimeType = 'audio/ogg';
-    else if (ext === '.m4a') mimeType = 'audio/mp4';
+    else if (ext === '.ogg' || ext === '.opus') mimeType = 'audio/ogg';
+    else if (ext === '.m4a' || ext === '.m4r' || ext === '.aac') mimeType = 'audio/mp4';
+    else if (ext === '.flac') mimeType = 'audio/flac';
+    else if (ext === '.caf') mimeType = 'audio/x-caf';
+    else if (ext === '.aiff' || ext === '.aif') mimeType = 'audio/aiff';
+    else if (ext === '.wma') mimeType = 'audio/x-ms-wma';
+    else if (prefix === 'song' || prefix === 'voice') mimeType = 'audio/mpeg';
     else mimeType = 'image/jpeg';
   }
 

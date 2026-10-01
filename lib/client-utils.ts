@@ -1,4 +1,4 @@
-export function shrink(file: File, max: number = 1200): Promise<Blob | File> {
+export function shrink(file: File, max: number = 800): Promise<Blob | File> {
   return new Promise((resolve) => {
     // If it's not an image file or FileReader is unavailable, return original file
     if (!file.type.startsWith('image/') && !file.name.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i)) {
@@ -41,7 +41,7 @@ export function shrink(file: File, max: number = 1200): Promise<Blob | File> {
               }
             },
             'image/jpeg',
-            0.82
+            0.75
           );
         } catch (err) {
           console.warn('Canvas processing error on mobile, using original file:', err);
