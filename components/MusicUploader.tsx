@@ -1,12 +1,15 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
+import { uploadLargeAudioInChunks } from '@/lib/chunked-upload';
 
 interface MusicUploaderProps {
   selectedSongFile: File | null;
   songTitle: string;
+  songUrl?: string;
   onSongChange: (file: File | null) => void;
   onSongTitleChange: (title: string) => void;
+  onSongUrlChange?: (url: string) => void;
 }
 
 function formatBytes(bytes: number) {
@@ -20,13 +23,22 @@ function formatBytes(bytes: number) {
 export const MusicUploader: React.FC<MusicUploaderProps> = ({
   selectedSongFile,
   songTitle,
+  songUrl,
   onSongChange,
   onSongTitleChange,
+  onSongUrlChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  // Real-time upload state
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadStatusText, setUploadStatusText] = useState<string>('');
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadComplete, setUploadComplete] = useState<boolean>(!!songUrl);
+  const [uploadError, setUploadError] = useState<string>('');
 
   useEffect(() => {
     if (selectedSongFile) {
@@ -34,6 +46,38 @@ export const MusicUploader: React.FC<MusicUploaderProps> = ({
       if (audioRef.current) {
         audioRef.current.src = url;
       }
+
+      // Automatically trigger real-time background upload if not yet uploaded
+      if (!songUrl) {
+        setIsUploading(true);
+        setUploadProgress(5);
+        setUploadStatusText('Preparing real-time upload...');
+        setUploadError('');
+
+        uploadLargeAudioInChunks(
+          selectedSongFile,
+          selectedSongFile.name,
+          (percent, text) => {
+            setUploadProgress(percent);
+            setUploadStatusText(text);
+          }
+        )
+          .then((mediaUrl) => {
+            setIsUploading(false);
+            setUploadProgress(100);
+            setUploadComplete(true);
+            setUploadStatusText('Uploaded & Ready');
+            if (onSongUrlChange) {
+              onSongUrlChange(mediaUrl);
+            }
+          })
+          .catch((err) => {
+            console.error('[MusicUploader] Background upload error:', err);
+            setIsUploading(false);
+            setUploadError(err.message || 'Upload failed');
+          });
+      }
+
       return () => {
         URL.revokeObjectURL(url);
       };
@@ -43,6 +87,10 @@ export const MusicUploader: React.FC<MusicUploaderProps> = ({
         audioRef.current.removeAttribute('src');
       }
       setIsPlaying(false);
+      setIsUploading(false);
+      setUploadProgress(0);
+      setUploadComplete(false);
+      setUploadError('');
     }
   }, [selectedSongFile]);
 
@@ -59,7 +107,6 @@ export const MusicUploader: React.FC<MusicUploaderProps> = ({
   const MAX_SONG_BYTES = 25 * 1024 * 1024; // Up to 25 MB supported with automatic chunked upload
 
   const handleFile = (file: File) => {
-    // iPhone Safari / Files app sometimes passes empty type, video/mp4 (recorded/saved clips), or application/octet-stream
     const isAudio =
       !file.type ||
       file.type.startsWith('audio/') ||
@@ -145,7 +192,7 @@ export const MusicUploader: React.FC<MusicUploaderProps> = ({
       ) : (
         <div className="song-selected-state">
           <div className="song-disc-icon">💿</div>
-          <div className="song-meta">
+          <div className="song-meta" style={{ flex: 1 }}>
             <div className="song-filename">{selectedSongFile.name}</div>
             <div className="song-filesize">{formatBytes(selectedSongFile.size)}</div>
           </div>
@@ -162,11 +209,49 @@ export const MusicUploader: React.FC<MusicUploaderProps> = ({
               className="btn ghost btn-xs btn-danger"
               onClick={() => {
                 onSongChange(null);
+                if (onSongUrlChange) onSongUrlChange('');
                 setIsPlaying(false);
               }}
             >
               ✕ Remove
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* REAL-TIME AUDIO UPLOAD PROGRESS BAR */}
+      {selectedSongFile && (
+        <div className="audio-upload-progress-container">
+          <div className="audio-progress-bar-header">
+            <span className="audio-progress-title">
+              {uploadComplete ? '✨ Real-Time Audio Uploaded' : isUploading ? '⚡ Uploading in Real-Time…' : '🎵 Audio Status'}
+            </span>
+            <span className="audio-progress-percent">
+              {uploadComplete ? '100%' : `${uploadProgress}%`}
+            </span>
+          </div>
+
+          <div className="audio-progress-bar-track">
+            <div
+              className="audio-progress-bar-fill"
+              style={{
+                width: `${uploadComplete ? 100 : uploadProgress}%`,
+                background: uploadError ? '#ef4444' : undefined,
+              }}
+            />
+          </div>
+
+          <div className="audio-progress-subtext">
+            <span>
+              {uploadError ? (
+                <span style={{ color: '#ef4444' }}>⚠️ {uploadError}</span>
+              ) : uploadComplete ? (
+                <span style={{ color: '#10b981', fontWeight: 600 }}>✓ Ready for instant QR generation</span>
+              ) : (
+                uploadStatusText || `Uploading (${formatBytes((selectedSongFile.size * uploadProgress) / 100)} / ${formatBytes(selectedSongFile.size)})`
+              )}
+            </span>
+            <span>{formatBytes(selectedSongFile.size)}</span>
           </div>
         </div>
       )}

@@ -14,6 +14,23 @@ declare global {
 if (!globalThis.__MEDIA_CACHE__) globalThis.__MEDIA_CACHE__ = {};
 if (!globalThis.__CHUNK_CACHE__) globalThis.__CHUNK_CACHE__ = {};
 
+function toBuffer(data: any): Buffer {
+  if (!data) return Buffer.alloc(0);
+  if (Buffer.isBuffer(data)) return data;
+  if (data.buffer && Buffer.isBuffer(data.buffer)) return data.buffer;
+  if (data.buffer instanceof ArrayBuffer) return Buffer.from(data.buffer);
+  if (typeof data.value === 'function') {
+    const val = data.value(true);
+    if (Buffer.isBuffer(val)) return val;
+    if (val instanceof Uint8Array || val instanceof ArrayBuffer) return Buffer.from(val as any);
+  }
+  if (data._bsontype === 'Binary' && data.sub_type !== undefined) {
+    if (data.buffer) return Buffer.from(data.buffer as any);
+  }
+  if (data instanceof Uint8Array || data instanceof ArrayBuffer) return Buffer.from(data as any);
+  return Buffer.from(String(data));
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -56,7 +73,7 @@ export async function POST(req: NextRequest) {
             .sort({ chunkIndex: 1 })
             .lean();
 
-          const totalBuffers = chunks.map((c) => Buffer.from(c.data));
+          const totalBuffers = chunks.map((c) => toBuffer(c.data));
           const completeBuffer = Buffer.concat(totalBuffers);
 
           // Save assembled file in Media collection

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
 interface PhotoUploaderProps {
   photos: (File | null)[];
@@ -14,6 +14,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
   onPhotoChange,
 }) => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
 
   const handleFileChange = (
     index: number,
@@ -22,13 +23,12 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
     const file = e.target.files?.[0];
 
     if (file) {
-      console.log('Selected photo:', {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      });
-
+      setLoadingIndex(index);
       onPhotoChange(index, file);
+      // Give visual feedback of completion
+      setTimeout(() => {
+        setLoadingIndex(null);
+      }, 400);
     }
 
     // Allow selecting the same file again.
@@ -44,6 +44,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
       <div className="pics-grid">
         {[0, 1, 2].map((idx) => {
           const hasPhoto = !!previewUrls[idx];
+          const isLoading = loadingIndex === idx;
 
           return (
             <div
@@ -68,6 +69,29 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
                   pointerEvents: 'none',
                 }}
               />
+
+              {/* Ready checkmark badge */}
+              {hasPhoto && !isLoading && (
+                <div className="image-uploaded-badge">✓ Ready</div>
+              )}
+
+              {/* Circular Progress Loader Overlay */}
+              {isLoading && (
+                <div className="circular-loader-overlay">
+                  <svg className="circular-svg" viewBox="0 0 36 36">
+                    <path
+                      className="circular-bg"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="circular-meter"
+                      strokeDasharray="75, 100"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <span className="circular-percent-text">Processing</span>
+                </div>
+              )}
 
               <button
                 type="button"

@@ -102,11 +102,27 @@ export function SurpriseViewerClient({
     } catch (e) {}
   };
 
+  // Unlock Web Audio context & start audio
+  const startAudio = () => {
+    unlockAudioContext();
+    const aud = bgAudioRef.current;
+    if (!aud) return;
+    const song = data?.musicUrl || '/song.mp3';
+    if (!aud.src || (!aud.src.endsWith(song) && aud.src !== song)) {
+      aud.src = song;
+    }
+    aud.play()
+      .then(() => setIsPlayingMusic(true))
+      .catch((err) => {
+        console.warn('Audio play request:', err);
+      });
+  };
+
   const toggleMusic = () => {
     const aud = bgAudioRef.current;
     if (!aud) return;
     if (aud.paused) {
-      aud.play().then(() => setIsPlayingMusic(true)).catch(console.error);
+      startAudio();
     } else {
       aud.pause();
       setIsPlayingMusic(false);
@@ -161,27 +177,50 @@ export function SurpriseViewerClient({
         playsInline
         onPlay={() => setIsPlayingMusic(true)}
         onPause={() => setIsPlayingMusic(false)}
+        onPlaying={() => setIsPlayingMusic(true)}
       />
+
+      {/* Persistent Floating Sound Control Pill */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 14,
+          right: 14,
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          background: isPlayingMusic ? 'rgba(255, 255, 255, 0.94)' : 'rgba(255, 240, 243, 0.96)',
+          border: isPlayingMusic ? '1.5px solid var(--teal, #3f9482)' : '1.5px solid var(--peach, #e07a5f)',
+          borderRadius: 30,
+          padding: '7px 14px',
+          boxShadow: '0 4px 18px rgba(0,0,0,0.12)',
+          cursor: 'pointer',
+          backdropFilter: 'blur(8px)',
+          transition: 'all 0.25s ease',
+          userSelect: 'none',
+        }}
+        onClick={toggleMusic}
+        title={isPlayingMusic ? 'Click to Pause' : 'Click to Play Music'}
+      >
+        <span style={{ fontSize: 16 }}>{isPlayingMusic ? '🎵' : '🔇'}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: isPlayingMusic ? 'var(--teal-d, #2c6e60)' : 'var(--ink, #333)' }}>
+          {isPlayingMusic ? (data.songTitle || 'Playing Music') : 'Tap for Sound ▶'}
+        </span>
+        {isPlayingMusic && (
+          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#10b981', animation: 'pulse 1.5s infinite' }} />
+        )}
+      </div>
 
       {/* STEP 1: ENVELOPE */}
       {viewerStep === 1 && (
         <ViewerEnvelope
           data={data}
           onOpenEnvelope={() => {
-            unlockAudioContext();
-            const aud = bgAudioRef.current;
-            const song = data.musicUrl || '/song.mp3';
-            if (aud) {
-              if (!aud.src || (!aud.src.endsWith(song) && aud.src !== song)) {
-                aud.src = song;
-                aud.load();
-              }
-              aud.play().then(() => setIsPlayingMusic(true)).catch((err) => {
-                console.warn('Mobile autoplay policy prevented automatic sound:', err);
-              });
-            }
+            startAudio();
           }}
           onNext={() => {
+            startAudio();
             setViewerStep(2);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}

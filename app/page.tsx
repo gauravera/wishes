@@ -67,6 +67,7 @@ function ECardApp() {
   // Music & Voice
   const [selectedSongFile, setSelectedSongFile] = useState<File | null>(null);
   const [songTitle, setSongTitle] = useState<string>('');
+  const [uploadedSongUrl, setUploadedSongUrl] = useState<string>('');
   const [voiceBlob, setVoiceBlob] = useState<Blob | File | null>(null);
   const [voiceTitle, setVoiceTitle] = useState<string>('');
 
@@ -483,8 +484,10 @@ function ECardApp() {
       formData.append('themeColors', JSON.stringify(VIBE_THEMES[currentVibe]));
       formData.append('payment_id', `FREE-${Date.now()}`);
 
-      // Custom song (Upload via chunks if > 2MB to support up to 20MB files without hitting Vercel limit)
-      if (selectedSongFile) {
+      // Custom song (Uses real-time uploaded URL or uploads remaining chunks)
+      if (uploadedSongUrl) {
+        formData.append('songUrl', uploadedSongUrl);
+      } else if (selectedSongFile) {
         if (selectedSongFile.size > 2 * 1024 * 1024) {
           const songMediaUrl = await uploadLargeAudioInChunks(selectedSongFile, selectedSongFile.name);
           formData.append('songUrl', songMediaUrl);
@@ -509,42 +512,50 @@ function ECardApp() {
         formData.append('voiceNoteTitle', voiceTitle.trim());
       }
 
-      // Witness photo with compression
+      // Compress all photos & witness photo in parallel for maximum speed
+      const compressionPromises: Promise<void>[] = [];
+
       if (witnessPhoto) {
-        try {
-          const witnessCompressed = await shrink(witnessPhoto, 600);
-          formData.append('witnessPhoto', witnessCompressed, 'witness.jpg');
-        } catch (err) {
-          console.warn('Fallback to raw witness photo:', err);
-          formData.append('witnessPhoto', witnessPhoto);
-        }
+        compressionPromises.push(
+          shrink(witnessPhoto, 600)
+            .then((compressed) => {
+              formData.append('witnessPhoto', compressed, 'witness.jpg');
+            })
+            .catch(() => {
+              formData.append('witnessPhoto', witnessPhoto);
+            })
+        );
       }
 
-      // 3 Main Photos with compression
-      for (let i = 0; i < 3; i++) {
-        if (photos[i]) {
-          try {
-            const compressedBlob = await shrink(photos[i]!, 800);
-            formData.append('photos', compressedBlob, `photo-${i + 1}.jpg`);
-          } catch (err) {
-            console.warn(`Fallback to raw photo ${i + 1}:`, err);
-            formData.append('photos', photos[i]!, `photo-${i + 1}.jpg`);
-          }
+      photos.forEach((photo, i) => {
+        if (photo) {
+          compressionPromises.push(
+            shrink(photo, 800)
+              .then((compressed) => {
+                formData.append('photos', compressed, `photo-${i + 1}.jpg`);
+              })
+              .catch(() => {
+                formData.append('photos', photo, `photo-${i + 1}.jpg`);
+              })
+          );
         }
-      }
+      });
 
-      // Custom Wall Uploads
-      for (let i = 0; i < 6; i++) {
-        if (wallSlots[i] && wallSlots[i].file) {
-          try {
-            const wallCompressed = await shrink(wallSlots[i].file!, 800);
-            formData.append('wallPhotos', wallCompressed, `wall-${i + 1}.jpg`);
-          } catch (err) {
-            console.warn(`Fallback to raw wall photo ${i + 1}:`, err);
-            formData.append('wallPhotos', wallSlots[i].file!, `wall-${i + 1}.jpg`);
-          }
+      wallSlots.forEach((slot, i) => {
+        if (slot && slot.file) {
+          compressionPromises.push(
+            shrink(slot.file, 800)
+              .then((compressed) => {
+                formData.append('wallPhotos', compressed, `wall-${i + 1}.jpg`);
+              })
+              .catch(() => {
+                formData.append('wallPhotos', slot.file!, `wall-${i + 1}.jpg`);
+              })
+          );
         }
-      }
+      });
+
+      await Promise.all(compressionPromises);
 
       const res = await fetch('/api/create', {
         method: 'POST',
@@ -756,8 +767,13 @@ function ECardApp() {
             <MusicUploader
               selectedSongFile={selectedSongFile}
               songTitle={songTitle}
-              onSongChange={(f) => setSelectedSongFile(f)}
+              songUrl={uploadedSongUrl}
+              onSongChange={(f) => {
+                setSelectedSongFile(f);
+                if (!f) setUploadedSongUrl('');
+              }}
               onSongTitleChange={(t) => setSongTitle(t)}
+              onSongUrlChange={(url) => setUploadedSongUrl(url)}
             />
 
             <VoiceNoteRecorder
