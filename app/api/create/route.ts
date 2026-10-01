@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { getSurprises, saveSurprises, saveUploadedFile } from '@/lib/storage';
+import { saveSurprise, saveUploadedFile } from '@/lib/storage';
 import { SurpriseData } from '@/types/ecard';
 
 export const dynamic = 'force-dynamic';
@@ -129,21 +129,21 @@ export async function POST(req: NextRequest) {
       finalWallPhotos = [1, 2, 3, 4, 5, 6].map((i) => `/library/viral_${i}.jpg`);
     }
 
-    // Process Custom Song
-    let customSongUrl = '';
+    // Process Custom Song (Chunk-uploaded URL or direct file)
+    let customSongUrl = (formData.get('songUrl') as string) || '';
     let customSongTitle = songTitle;
     const songFile = formData.get('song') as File | null;
-    if (songFile && songFile.size > 0) {
+    if (!customSongUrl && songFile && songFile.size > 0) {
       customSongUrl = await saveUploadedFile(sid, songFile, 'song');
       if (!customSongTitle) {
         customSongTitle = songFile.name.replace(/\.[^/.]+$/, '');
       }
     }
 
-    // Process Voice Note
-    let voiceNoteUrl: string | null = null;
+    // Process Voice Note (Chunk-uploaded URL or direct file)
+    let voiceNoteUrl: string | null = (formData.get('voiceNoteUrl') as string) || null;
     const voiceFile = formData.get('voiceNote') as File | null;
-    if (voiceFile && voiceFile.size > 0) {
+    if (!voiceNoteUrl && voiceFile && voiceFile.size > 0) {
       voiceNoteUrl = await saveUploadedFile(sid, voiceFile, 'voice');
     }
 
@@ -192,9 +192,7 @@ export async function POST(req: NextRequest) {
       expiresAt: expiresAt,
     };
 
-    const surprises = getSurprises();
-    surprises[sid] = newRecord;
-    saveSurprises(surprises);
+    await saveSurprise(newRecord);
 
     console.log(`[Next.js API] Created E-Card ${sid} for ${newRecord.receiver} from ${newRecord.sender} (Expires: ${expiresAt})`);
 

@@ -19,6 +19,7 @@ import {
   WITNESS_NAME_MAP,
 } from '@/lib/constants';
 import { shrink } from '@/lib/client-utils';
+import { uploadLargeAudioInChunks } from '@/lib/chunked-upload';
 import { EventPicker } from '@/components/EventPicker';
 import { VibePicker } from '@/components/VibePicker';
 import { PhotoUploader } from '@/components/PhotoUploader';
@@ -498,32 +499,48 @@ function ECardApp() {
       formData.append('themeColors', JSON.stringify(VIBE_THEMES[currentVibe]));
       formData.append('payment_id', `FREE-${Date.now()}`);
 
-      // Custom song
+      // Custom song (Upload via chunks if > 2MB to support up to 20MB files without hitting Vercel limit)
       if (selectedSongFile) {
-        formData.append('song', selectedSongFile);
+        if (selectedSongFile.size > 2 * 1024 * 1024) {
+          const songMediaUrl = await uploadLargeAudioInChunks(selectedSongFile, selectedSongFile.name);
+          formData.append('songUrl', songMediaUrl);
+        } else {
+          formData.append('song', selectedSongFile);
+        }
       }
       if (songTitle.trim()) {
         formData.append('songTitle', songTitle.trim());
       }
 
-      // Voice note
+      // Voice note (Upload via chunks if > 2MB)
       if (voiceBlob) {
-        formData.append('voiceNote', voiceBlob, 'voice-note.webm');
+        if (voiceBlob.size > 2 * 1024 * 1024) {
+          const voiceMediaUrl = await uploadLargeAudioInChunks(voiceBlob, 'voice-note.webm');
+          formData.append('voiceNoteUrl', voiceMediaUrl);
+        } else {
+          formData.append('voiceNote', voiceBlob, 'voice-note.webm');
+        }
       }
       if (voiceTitle.trim()) {
         formData.append('voiceNoteTitle', voiceTitle.trim());
       }
 
-      // Witness photo
+      // Witness photo with compression
       if (witnessPhoto) {
-        formData.append('witnessPhoto', witnessPhoto);
+        try {
+          const witnessCompressed = await shrink(witnessPhoto, 600);
+          formData.append('witnessPhoto', witnessCompressed, 'witness.jpg');
+        } catch (err) {
+          console.warn('Fallback to raw witness photo:', err);
+          formData.append('witnessPhoto', witnessPhoto);
+        }
       }
 
       // 3 Main Photos with compression
       for (let i = 0; i < 3; i++) {
         if (photos[i]) {
           try {
-            const compressedBlob = await shrink(photos[i]!);
+            const compressedBlob = await shrink(photos[i]!, 800);
             formData.append('photos', compressedBlob, `photo-${i + 1}.jpg`);
           } catch (err) {
             console.warn(`Fallback to raw photo ${i + 1}:`, err);
@@ -536,7 +553,7 @@ function ECardApp() {
       for (let i = 0; i < 6; i++) {
         if (wallSlots[i] && wallSlots[i].file) {
           try {
-            const wallCompressed = await shrink(wallSlots[i].file!);
+            const wallCompressed = await shrink(wallSlots[i].file!, 800);
             formData.append('wallPhotos', wallCompressed, `wall-${i + 1}.jpg`);
           } catch (err) {
             console.warn(`Fallback to raw wall photo ${i + 1}:`, err);
@@ -552,6 +569,9 @@ function ECardApp() {
 
       if (!res.ok) {
         const errText = await res.text();
+        if (res.status === 413 || errText.includes('FUNCTION_PAYLOAD_TOO_LARGE') || errText.includes('Request Entity Too Large')) {
+          throw new Error('Upload error (413): The uploaded payload is too large. Please check your photos or audio.');
+        }
         throw new Error(`Upload error (${res.status}): ${errText}`);
       }
 

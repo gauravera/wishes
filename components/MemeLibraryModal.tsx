@@ -38,11 +38,7 @@ export const MemeLibraryModal: React.FC<MemeLibraryModalProps> = ({
         </button>
 
         <div className="meme-modal-head">
-          <span className="badge-tag">🐾 Wholesome Meme Collection</span>
-          <h2>Viral Memes &amp; Animated GIFs ({VIRAL_MEME_LIBRARY.length} Options)</h2>
-          <p style={{ fontSize: 13, color: 'var(--mut)', marginTop: 4 }}>
-            Click any meme or animated GIF to assign it to <b>Card {activeSlotIndex + 1}</b>
-          </p>
+          <h2>Choose a Meme or GIF</h2>
 
           <div className="meme-filter-tabs">
             <button
@@ -50,14 +46,14 @@ export const MemeLibraryModal: React.FC<MemeLibraryModalProps> = ({
               className={`filter-chip ${activeFilter === 'all' ? 'active' : ''}`}
               onClick={() => setActiveFilter('all')}
             >
-              All ({VIRAL_MEME_LIBRARY.length})
+              All
             </button>
             <button
               type="button"
               className={`filter-chip ${activeFilter === 'animated' ? 'active' : ''}`}
               onClick={() => setActiveFilter('animated')}
             >
-              ✨ Animated GIFs (9)
+              ✨ Animated GIFs
             </button>
             <button
               type="button"
@@ -103,12 +99,9 @@ export const MemeLibraryModal: React.FC<MemeLibraryModalProps> = ({
                 />
                 <div className="meme-item-meta">
                   <span className="meme-item-title">{meme.title}</span>
-                  <span className="meme-item-cat">
-                    {meme.category} • {meme.caption}
-                  </span>
                 </div>
                 <button type="button" className="meme-select-btn">
-                  {isSelected ? '✓ Selected' : `Choose for Card ${activeSlotIndex + 1}`}
+                  {isSelected ? '✓ Selected' : 'Select'}
                 </button>
               </div>
             );
