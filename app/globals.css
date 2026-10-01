@@ -38,10 +38,14 @@ body {
 }
 
 .page-container:has(.birthday-cake-scene-container) {
-  min-height: 100vh;
-  min-height: 100dvh;
-  background-color: #0d0706;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  background: radial-gradient(ellipse 130% 100% at 50% 36%, rgba(255, 185, 80, 0.28) 0%, rgba(65, 30, 24, 0.92) 48%, rgba(32, 16, 14, 0.98) 78%, #160a08 100%) !important;
 }
+
 
 h1,
 h2,
@@ -2774,12 +2778,6 @@ select:focus {
   50% { opacity: 1; transform: scale(1) rotate(180deg); }
 }
 
-@keyframes birthday-pop-in {
-  0% { transform: scale(0) rotate(-12deg); opacity: 0; }
-  60% { transform: scale(1.08) rotate(2deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-
 /* Birthday body override — warm cream with subtle sprinkle pattern */
 .birthday-theme body,
 body.birthday-theme {
@@ -3175,10 +3173,6 @@ body.birthday-theme {
 .birthday-sparkle:nth-child(4) { bottom: 10%; right: 6%; animation-delay: 0.4s; }
 .birthday-sparkle:nth-child(5) { top: 45%; right: 4%; animation-delay: 1.2s; }
 
-/* Birthday Section Intro Animation */
-.birthday-theme .sec {
-  animation: birthday-pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
 
 /* Birthday Badge Tag — party themed */
 .birthday-theme .badge-tag {
@@ -3277,43 +3271,69 @@ body.birthday-theme {
    ========================================================================= */
 
 .birthday-cake-scene-container {
-  min-height: 100vh;
-  min-height: 100dvh;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(14px, 2.5vh, 26px);
-  padding: 24px 16px 36px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
-  background: radial-gradient(circle at 50% 35%, rgba(255, 179, 71, 0.18) 0%, rgba(26, 17, 16, 0.96) 65%, #0d0706 100%);
-  color: #fff6ee;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: clamp(14px, 2.5vh, 26px) 20px clamp(20px, 3.5vh, 36px) !important;
+  text-align: center !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  background: radial-gradient(ellipse 130% 110% at 50% 36%, #4e2219 0%, #2e1410 46%, #190a08 80%, #0f0504 100%) !important;
+  color: #fff6ee !important;
   transition: background 1.2s ease;
+  user-select: none !important;
+  touch-action: none !important;
+}
+
+/* Atmospheric stage lighting from bottom floor to illuminate the entire screen */
+.birthday-cake-scene-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 42%;
+  background: radial-gradient(ellipse 85% 65% at 50% 100%, rgba(255, 165, 60, 0.22) 0%, rgba(255, 100, 40, 0.08) 50%, transparent 80%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 body:has(.birthday-cake-scene-container),
-body.birthday-theme:has(.birthday-cake-scene-container) {
-  background-color: #0d0706 !important;
-  background-image: radial-gradient(circle at 50% 35%, rgba(255, 179, 71, 0.18) 0%, rgba(26, 17, 16, 0.96) 65%, #0d0706 100%) !important;
-  min-height: 100vh !important;
-  min-height: 100dvh !important;
+body.birthday-theme:has(.birthday-cake-scene-container),
+html:has(.birthday-cake-scene-container) {
+  background-color: #0f0504 !important;
+  background-image: none !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow-x: hidden;
+  overflow: hidden !important;
 }
 
 .birthday-cake-scene-container.lighting,
 .birthday-cake-scene-container.all_lit {
-  background: radial-gradient(circle at 50% 35%, rgba(255, 167, 38, 0.28) 0%, rgba(35, 18, 14, 0.97) 65%, #0f0705 100%);
+  background: radial-gradient(ellipse 130% 110% at 50% 36%, #62281b 0%, #3a1711 46%, #1b0a08 80%, #100504 100%) !important;
 }
 
+.birthday-cake-scene-container.turning,
 .birthday-cake-scene-container.top_view,
 .birthday-cake-scene-container.blown {
-  background: radial-gradient(circle at 50% 45%, rgba(255, 183, 77, 0.24) 0%, rgba(32, 16, 14, 0.97) 65%, #0e0705 100%);
+  background: radial-gradient(ellipse 130% 110% at 50% 46%, #55241b 0%, #331510 46%, #190a08 80%, #0e0504 100%) !important;
 }
 
 /* Festoon fairy lights hanging across the top */
@@ -3375,11 +3395,13 @@ body.birthday-theme:has(.birthday-cake-scene-container) {
   animation: sparkle-float 4s ease-in-out infinite alternate;
 }
 
-.sparkle-star.s1 { top: 22%; left: 12%; font-size: 20px; animation-duration: 3.5s; }
-.sparkle-star.s2 { top: 28%; right: 14%; font-size: 22px; animation-duration: 4.2s; animation-delay: 0.5s; }
-.sparkle-star.s3 { top: 62%; left: 8%; font-size: 18px; animation-duration: 3.8s; animation-delay: 1s; }
-.sparkle-star.s4 { top: 68%; right: 10%; font-size: 24px; animation-duration: 4.5s; animation-delay: 0.3s; }
-.sparkle-star.s5 { top: 82%; left: 22%; font-size: 16px; animation-duration: 3.2s; animation-delay: 1.2s; }
+.sparkle-star.s1 { top: 18%; left: 10%; font-size: 20px; animation-duration: 3.5s; }
+.sparkle-star.s2 { top: 24%; right: 12%; font-size: 22px; animation-duration: 4.2s; animation-delay: 0.5s; }
+.sparkle-star.s3 { top: 58%; left: 7%; font-size: 18px; animation-duration: 3.8s; animation-delay: 1s; }
+.sparkle-star.s4 { top: 62%; right: 8%; font-size: 24px; animation-duration: 4.5s; animation-delay: 0.3s; }
+.sparkle-star.s5 { top: 82%; left: 16%; font-size: 18px; animation-duration: 3.2s; animation-delay: 1.2s; }
+.sparkle-star.s6 { top: 86%; right: 18%; font-size: 20px; animation-duration: 3.9s; animation-delay: 0.7s; }
+.sparkle-star.s7 { top: 42%; left: 4%; font-size: 16px; animation-duration: 4.6s; animation-delay: 1.5s; }
 
 @keyframes sparkle-float {
   0% { transform: translateY(0px) rotate(0deg); opacity: 0.4; }
@@ -3390,8 +3412,9 @@ body.birthday-theme:has(.birthday-cake-scene-container) {
 .cake-scene-header {
   position: relative;
   z-index: 10;
-  max-width: 640px;
-  margin-bottom: 24px;
+  max-width: 680px;
+  margin-bottom: 0;
+  padding: 0 16px;
 }
 
 .cake-scene-badge {
@@ -3441,8 +3464,11 @@ body.birthday-theme:has(.birthday-cake-scene-container) {
 
 .cake-stage-3d {
   position: relative;
-  width: min(440px, 94vw);
-  height: clamp(340px, 50vh, 430px);
+  width: min(680px, 94vw);
+  flex: 1;
+  height: 100%;
+  min-height: 350px;
+  max-height: clamp(420px, 60vh, 620px);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -3484,13 +3510,14 @@ body.birthday-theme:has(.birthday-cake-scene-container) {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 520px;
-  margin-top: 4px;
+  max-width: 540px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 /* Interactive Trigger Button */
 .cake-prompt-action {
-  margin-top: 24px;
+  margin-top: 0;
   display: flex;
   flex-direction: column;
   align-items: center;

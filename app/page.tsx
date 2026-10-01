@@ -447,7 +447,7 @@ function ECardApp() {
       bgAudioRef.current.load();
     }
     setViewerStep(1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   // Upload to Backend API

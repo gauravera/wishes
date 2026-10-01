@@ -360,13 +360,13 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
     }
   }, [phase, litCount, receiverName]);
 
-  // EFFECT 2: In 'all_lit', pause 1500ms then smoothly initiate 3D camera flight
+  // EFFECT 2: When all candles are lit, smoothly initiate 3D camera flight
   useEffect(() => {
     if (phase !== 'all_lit') return;
 
     const timer = setTimeout(() => {
       setPhase('turning');
-    }, 1500);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [phase]);
@@ -428,6 +428,11 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
     } catch (e) {
       // Ignore
     }
+
+    // Automatically transition to the card section after celebration
+    setTimeout(() => {
+      if (onNext) onNext();
+    }, 1400);
   };
 
   const handleUnlock = () => {
@@ -827,6 +832,14 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
     };
     window.addEventListener('resize', handleResize);
 
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        handleResize();
+      });
+      resizeObserver.observe(container);
+    }
+
     const cubicEaseInOut = (t: number) => {
       return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     };
@@ -932,6 +945,9 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
       window.removeEventListener('mousemove', handlePointerMove);
       window.removeEventListener('touchmove', handlePointerMove);
       window.removeEventListener('resize', handleResize);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       if (animFrameIdRef.current) {
         cancelAnimationFrame(animFrameIdRef.current);
       }
@@ -942,7 +958,26 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
   const isFlipped = phase === 'turning' || phase === 'top_view' || phase === 'blown';
 
   return (
-    <div className={`birthday-cake-scene-container ${phase}`}>
+    <div
+      className={`birthday-cake-scene-container ${phase}`}
+      onClick={() => {
+        if (phase === 'initial') {
+          startCeremony();
+        } else if (phase === 'all_lit') {
+          triggerTurnToTop();
+        } else if (phase === 'top_view') {
+          handleBlowOut();
+        } else if (phase === 'blown') {
+          if (onNext) onNext();
+        }
+      }}
+      style={{
+        cursor:
+          phase === 'initial' || phase === 'top_view' || phase === 'all_lit' || phase === 'blown'
+            ? 'pointer'
+            : 'default',
+      }}
+    >
       {/* Twilight party fairy lights banner */}
       <div className="cake-fairy-lights" aria-hidden="true">
         <span className="fairy-bulb b1" />
@@ -955,13 +990,15 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
         <span className="fairy-bulb b8" />
       </div>
 
-      {/* Floating party sparkles */}
+      {/* Floating party sparkles across entire viewport */}
       <div className="cake-ambient-sparkles" aria-hidden="true">
         <span className="sparkle-star s1">✨</span>
         <span className="sparkle-star s2">⭐</span>
         <span className="sparkle-star s3">🎉</span>
         <span className="sparkle-star s4">✨</span>
         <span className="sparkle-star s5">⭐</span>
+        <span className="sparkle-star s6">✨</span>
+        <span className="sparkle-star s7">🌟</span>
       </div>
 
       {/* Header Tag */}
@@ -978,7 +1015,7 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
           {phase === 'blown' ? (
             '✨ Your birthday wish has been released into the stars! ✨'
           ) : phase === 'top_view' ? (
-            'Close your eyes, make your deepest wish, and blow out the candles 🌬️'
+            '✨ Close your eyes, make a wish, and tap the screen to blow out the candles 🌬️'
           ) : phase === 'turning' ? (
             'Gliding smoothly to top view... 🎂✨'
           ) : (
@@ -995,10 +1032,26 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
       <div
         className="cake-stage-3d"
         ref={containerRef}
-        onClick={phase === 'initial' ? startCeremony : phase === 'all_lit' ? triggerTurnToTop : undefined}
-        role={phase === 'initial' || phase === 'all_lit' ? 'button' : undefined}
-        tabIndex={phase === 'initial' || phase === 'all_lit' ? 0 : undefined}
-        style={{ cursor: phase === 'initial' || phase === 'all_lit' ? 'pointer' : 'default' }}
+        onClick={(e) => {
+          if (phase === 'initial') {
+            e.stopPropagation();
+            startCeremony();
+          } else if (phase === 'all_lit') {
+            e.stopPropagation();
+            triggerTurnToTop();
+          } else if (phase === 'top_view') {
+            e.stopPropagation();
+            handleBlowOut();
+          }
+        }}
+        role={phase === 'initial' || phase === 'all_lit' || phase === 'top_view' ? 'button' : undefined}
+        tabIndex={phase === 'initial' || phase === 'all_lit' || phase === 'top_view' ? 0 : undefined}
+        style={{
+          cursor:
+            phase === 'initial' || phase === 'all_lit' || phase === 'top_view'
+              ? 'pointer'
+              : 'default',
+        }}
       >
         <canvas ref={canvasRef} className="cake-webgl-canvas" />
 
@@ -1031,81 +1084,29 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
               <span>Light the Birthday Candles</span>
               <span className="sparkle-icon">✨</span>
             </button>
-            <p className="tap-hint">or tap the cake to begin the celebration</p>
           </div>
         )}
 
-        {/* Progress Indicator during lighting (Slow and sequential, no skipping) */}
-        {phase === 'lighting' && (
-          <div className="candle-lighting-status">
-            <div className="lighting-dots">
-              {CANDLE_CONFIGS.map((_, i) => (
-                <span
-                  key={i}
-                  className={`status-dot ${i < litCount ? 'active' : ''}`}
-                />
-              ))}
-            </div>
-            <p className="status-label">
-              Lighting candle {Math.min(litCount + 1, TOTAL_CANDLES)} of {TOTAL_CANDLES}... ✨
-            </p>
-          </div>
-        )}
-
-        {/* All lit banner */}
-        {phase === 'all_lit' && (
-          <div
-            className="all-lit-banner"
-            onClick={(e) => {
-              e.stopPropagation();
-              triggerTurnToTop();
-            }}
-          >
-            <span>🎂 Look at that warm birthday glow! Turning to top view... ↷ 🎂</span>
-          </div>
-        )}
-
-        {/* Top View and Blown State Action Buttons */}
-        {isFlipped && (
+        {/* Top View Action Controls — Only visible when arrived at top view */}
+        {phase === 'top_view' && (
           <div className="cake-top-view-controls">
             <div className="cake-sender-ribbon">
               <span className="ribbon-text">
                 Baked with all my love for you, from <strong>{senderName}</strong> 💖
               </span>
             </div>
+            <p className="tap-hint" style={{ marginTop: 12, fontSize: 15, color: '#ffe082', fontWeight: 600 }}>
+              🌬️ Tap anywhere on the screen to blow out the candles ✨
+            </p>
+          </div>
+        )}
 
-            <div className="cake-top-actions">
-              {(phase === 'top_view' || phase === 'turning') && (
-                <button
-                  type="button"
-                  className="btn-blow-candles"
-                  disabled={phase === 'turning'}
-                  onClick={handleBlowOut}
-                >
-                  <span className="btn-icon">🌬️</span>
-                  <span>{phase === 'turning' ? 'Rotating Cake...' : 'Make a Wish & Blow Out the Candles'}</span>
-                  <span className="btn-icon">🎂</span>
-                </button>
-              )}
-
-              {phase === 'blown' && (
-                <div className="blown-completion-container">
-                  <p className="wish-granted-text">
-                    🌟 Your birthday wish is sealed with love! 🌟
-                  </p>
-                  <button
-                    type="button"
-                    className="btn-open-surprises"
-                    onClick={() => {
-                      if (onNext) onNext();
-                    }}
-                  >
-                    <span>Open Your Birthday Surprises & Gifts</span>
-                    <span className="btn-arrow">🎁 →</span>
-                  </button>
-                </div>
-              )}
-            </div>
+        {/* Celebratory badge on blown */}
+        {phase === 'blown' && (
+          <div className="wish-granted-badge">
+            <p className="wish-granted-text">
+              🌟 Your birthday wish is sealed with love! 🌟
+            </p>
           </div>
         )}
       </div>
