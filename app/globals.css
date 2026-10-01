@@ -2734,3 +2734,979 @@ select:focus {
 .meme-select-btn:hover {
   background: var(--teal-d);
 }
+
+/* =====================================================
+   BIRTHDAY THEME — Party Vibes, Not Clipart
+   ===================================================== */
+
+/* Floating Balloons — scattered, organic, gently bobbing */
+@keyframes birthday-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  33% { transform: translateY(-18px) rotate(3deg); }
+  66% { transform: translateY(-8px) rotate(-1deg); }
+}
+
+@keyframes birthday-float-alt {
+  0%, 100% { transform: translateY(0) rotate(1deg); }
+  40% { transform: translateY(-14px) rotate(-3deg); }
+  70% { transform: translateY(-6px) rotate(2deg); }
+}
+
+@keyframes birthday-sway {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  50% { transform: translateX(8px) rotate(2deg); }
+}
+
+@keyframes candle-flicker {
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+  25% { transform: scaleY(1.2) scaleX(0.9); opacity: 0.85; }
+  50% { transform: scaleY(0.85) scaleX(1.1); opacity: 1; }
+  75% { transform: scaleY(1.1) scaleX(0.95); opacity: 0.9; }
+}
+
+@keyframes sprinkle-drift {
+  0% { background-position: 0 0, 30px 20px, 60px 40px; }
+  100% { background-position: 60px 80px, 90px 100px, 120px 120px; }
+}
+
+@keyframes birthday-sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+@keyframes birthday-pop-in {
+  0% { transform: scale(0) rotate(-12deg); opacity: 0; }
+  60% { transform: scale(1.08) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Birthday body override — warm cream with subtle sprinkle pattern */
+.birthday-theme body,
+body.birthday-theme {
+  background-image:
+    radial-gradient(circle 2px, rgba(255, 107, 107, 0.12) 1px, transparent 1px),
+    radial-gradient(circle 2px, rgba(255, 193, 7, 0.1) 1px, transparent 1px),
+    radial-gradient(circle 1.5px, rgba(100, 181, 246, 0.1) 1px, transparent 1px),
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 47px 43px, 31px 37px, 53px 29px, 40px 40px, 40px 40px;
+  background-position: 0 0, 15px 20px, 30px 10px, 0 0, 0 0;
+}
+
+/* Birthday Balloon Decorations — positioned absolutely around sections */
+.birthday-balloon {
+  position: absolute;
+  font-size: 36px;
+  z-index: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08));
+  user-select: none;
+}
+
+.birthday-balloon::after {
+  content: '';
+  display: block;
+  width: 1.5px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.12);
+  margin: -4px auto 0;
+  border-radius: 1px;
+}
+
+.birthday-balloon:nth-child(1) {
+  top: 8%; left: 6%;
+  animation: birthday-float 5.2s ease-in-out infinite;
+}
+
+.birthday-balloon:nth-child(2) {
+  top: 12%; right: 8%;
+  animation: birthday-float-alt 6.1s ease-in-out infinite 0.4s;
+}
+
+.birthday-balloon:nth-child(3) {
+  bottom: 20%; left: 4%;
+  animation: birthday-float 7s ease-in-out infinite 1s;
+}
+
+.birthday-balloon:nth-child(4) {
+  bottom: 15%; right: 5%;
+  animation: birthday-float-alt 5.8s ease-in-out infinite 0.7s;
+}
+
+.birthday-balloon:nth-child(5) {
+  top: 35%; left: 2%;
+  animation: birthday-float 6.5s ease-in-out infinite 1.3s;
+}
+
+.birthday-balloon:nth-child(6) {
+  top: 40%; right: 3%;
+  animation: birthday-float-alt 5.5s ease-in-out infinite 0.2s;
+}
+
+/* Birthday Envelope — warm buttery paper, party seal */
+.birthday-theme .env-back {
+  background: linear-gradient(145deg, #fff5e1, #ffe8c2, #ffd9a0);
+  box-shadow:
+    0 25px 65px -12px rgba(180, 90, 20, 0.18),
+    0 10px 25px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(220, 160, 60, 0.15);
+}
+
+.birthday-theme .env-front-pocket {
+  background: linear-gradient(to top, #ffe4b5, #ffd89b) !important;
+}
+
+.birthday-theme .env-left-fold,
+.birthday-theme .env-right-fold {
+  background: linear-gradient(to bottom, #ffe4b5, #ffdba8) !important;
+}
+
+.birthday-theme .env-top-flap {
+  background: linear-gradient(to bottom, #ffecd2, #ffd89b) !important;
+}
+
+.birthday-theme .wax-seal {
+  background: radial-gradient(circle at 35% 35%, #ff7043, #e53935, #c62828) !important;
+  box-shadow: 0 4px 20px rgba(229, 57, 53, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.25) !important;
+}
+
+.birthday-theme .wax-heart {
+  font-size: 20px !important;
+}
+
+.birthday-theme .postal-stamp .stamp-perforation {
+  background: linear-gradient(135deg, #fff8e1, #ffe082) !important;
+  border-color: rgba(255, 160, 0, 0.3) !important;
+}
+
+/* Birthday envelope letter card — warmer */
+.birthday-theme .env-letter-card {
+  border-color: rgba(255, 183, 77, 0.35);
+  background: linear-gradient(to bottom, #fffef8, #fff9ed);
+}
+
+.birthday-theme .env-letter-tag {
+  color: #e65100 !important;
+}
+
+.birthday-theme .env-letter-title {
+  color: #bf360c !important;
+}
+
+.birthday-theme .env-letter-divider {
+  background: linear-gradient(90deg, transparent, #ffab40, transparent) !important;
+}
+
+/* Birthday Hero Section — warm party glow */
+.birthday-theme .sec-hero {
+  position: relative;
+}
+
+.birthday-theme .sec-hero::before {
+  content: '';
+  position: absolute;
+  top: -30px; left: -30px; right: -30px; bottom: -30px;
+  background:
+    radial-gradient(ellipse 600px 400px at 20% 30%, rgba(255, 183, 77, 0.08), transparent),
+    radial-gradient(ellipse 400px 300px at 80% 60%, rgba(255, 112, 67, 0.06), transparent);
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 32px;
+}
+
+.birthday-theme .sec-hero .eyebrow {
+  background: linear-gradient(90deg, #ff8f00, #f4511e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+.birthday-theme .sec-hero .title {
+  color: #bf360c;
+}
+
+.birthday-theme .sec-hero .ribbon {
+  color: #e65100;
+  font-weight: 600;
+}
+
+/* Birthday Polaroid — slightly rotated, party frame */
+.birthday-theme .polaroid {
+  box-shadow: 0 8px 32px rgba(255, 112, 67, 0.15), 0 2px 8px rgba(0,0,0,0.08);
+  border: 3px solid rgba(255, 183, 77, 0.25);
+}
+
+/* Birthday Music Player — warm tones */
+.birthday-theme .player {
+  background: linear-gradient(135deg, #fff8e1, #ffe0b2) !important;
+  border-color: rgba(255, 160, 0, 0.2) !important;
+}
+
+.birthday-theme .player .now {
+  color: #e65100 !important;
+}
+
+.birthday-theme .player h3 {
+  color: #bf360c !important;
+}
+
+.birthday-theme .bar i {
+  background: linear-gradient(90deg, #ff8f00, #f4511e) !important;
+}
+
+/* Birthday Wall Section — flip cards with party border */
+.birthday-theme .flip-card .flip-card-front {
+  border: 2px solid rgba(255, 183, 77, 0.25);
+}
+
+.birthday-theme .flip-card .pin {
+  background: #ff7043 !important;
+  box-shadow: 0 2px 6px rgba(255, 112, 67, 0.3) !important;
+}
+
+.birthday-theme .flip-card-back {
+  background: linear-gradient(145deg, #fff8e1, #ffe0b2) !important;
+  color: #4e342e !important;
+  border: 2px solid rgba(255, 160, 0, 0.2) !important;
+}
+
+/* Birthday Certificate — golden parchment feel */
+.birthday-theme .cert-card {
+  background: linear-gradient(135deg, #fffdf5, #fff8e1, #fff3e0) !important;
+  border: 2px solid rgba(255, 160, 0, 0.15) !important;
+  box-shadow: 0 16px 50px rgba(191, 54, 12, 0.06),
+    0 4px 16px rgba(0,0,0,0.04) !important;
+}
+
+.birthday-theme .cert-inner-frame {
+  border-color: rgba(255, 160, 0, 0.2) !important;
+}
+
+.birthday-theme .cert-seal-badge {
+  background: linear-gradient(135deg, #ff8f00, #f4511e) !important;
+}
+
+.birthday-theme .cert-category-tag {
+  background: linear-gradient(90deg, #fff3e0, #ffe0b2) !important;
+  border-color: rgba(255, 160, 0, 0.25) !important;
+  color: #bf360c !important;
+}
+
+.birthday-theme .cert-title-main {
+  color: #bf360c !important;
+  text-shadow: 0 1px 0 rgba(255, 183, 77, 0.3);
+}
+
+.birthday-theme .cert-recipient-name {
+  color: #e65100 !important;
+}
+
+.birthday-theme .cert-sig-hand {
+  color: #bf360c !important;
+}
+
+.birthday-theme .cert-duty-flower {
+  color: #ff7043 !important;
+}
+
+/* Birthday Coupons — gift-wrapped feel */
+.birthday-theme .sec-coupons .eyebrow {
+  background: linear-gradient(90deg, #ff8f00, #f4511e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.birthday-theme .scratch-voucher-inner {
+  background: linear-gradient(145deg, #fff8e1, #fff3e0) !important;
+  border-color: rgba(255, 160, 0, 0.2) !important;
+}
+
+.birthday-theme .voucher-num-pill {
+  background: linear-gradient(90deg, #ff8f00, #f4511e) !important;
+}
+
+.birthday-theme .voucher-unpicked-cover {
+  background: linear-gradient(145deg, #ffe0b2, #ffcc80, #ffb74d) !important;
+}
+
+.birthday-theme .scratch-modal-ribbon {
+  background: linear-gradient(90deg, #ff8f00, #f4511e) !important;
+}
+
+/* Birthday Letter Section — handwritten warmth */
+.birthday-theme .sec-letter .hand {
+  color: #e65100 !important;
+}
+
+.birthday-theme .pinned-notebook-sheet {
+  background: linear-gradient(to bottom, #fffdf5, #fff8e1) !important;
+}
+
+.birthday-theme .golden-pushpin {
+  background: #ff7043 !important;
+  box-shadow: 0 3px 8px rgba(255, 112, 67, 0.35) !important;
+}
+
+.birthday-theme .letter-greeting {
+  color: #bf360c !important;
+}
+
+.birthday-theme .letter-signoff-word {
+  color: #e65100 !important;
+}
+
+.birthday-theme .letter-signature-name {
+  color: #bf360c !important;
+}
+
+.birthday-theme .letter-signature-wavy {
+  background: linear-gradient(90deg, transparent, #ffab40, transparent) !important;
+}
+
+/* Birthday Buttons — warm gradient */
+.birthday-theme .btn {
+  background: linear-gradient(135deg, #ff8f00, #f4511e);
+}
+
+.birthday-theme .btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ffa000, #ff5722);
+  box-shadow: 0 8px 24px rgba(244, 81, 30, 0.2);
+}
+
+.birthday-theme .btn.primary {
+  background: linear-gradient(135deg, #ff8f00, #f4511e);
+}
+
+.birthday-theme .btn.ghost {
+  background: #fff;
+  color: #bf360c;
+  border-color: rgba(255, 183, 77, 0.4);
+}
+
+.birthday-theme .btn.ghost:hover:not(:disabled) {
+  border-color: #ff8f00;
+  color: #e65100;
+  background: #fffdf5;
+}
+
+/* Birthday Candle Row — decorative candles with flickering flames */
+.birthday-candle-row {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 20px 0 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.birthday-candle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.candle-flame {
+  width: 10px;
+  height: 16px;
+  background: radial-gradient(ellipse at bottom, #ffeb3b 20%, #ff9800 50%, #ff5722 80%, transparent 100%);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: candle-flicker 1.5s ease-in-out infinite;
+  box-shadow: 0 0 12px 4px rgba(255, 152, 0, 0.35), 0 0 24px 8px rgba(255, 193, 7, 0.15);
+  margin-bottom: 2px;
+}
+
+.birthday-candle:nth-child(2) .candle-flame { animation-delay: 0.3s; }
+.birthday-candle:nth-child(3) .candle-flame { animation-delay: 0.7s; }
+.birthday-candle:nth-child(4) .candle-flame { animation-delay: 0.15s; }
+.birthday-candle:nth-child(5) .candle-flame { animation-delay: 0.5s; }
+
+.candle-wick {
+  width: 2px;
+  height: 6px;
+  background: #5d4037;
+  border-radius: 1px;
+}
+
+.candle-stick {
+  width: 12px;
+  height: 36px;
+  border-radius: 3px 3px 2px 2px;
+  box-shadow: inset -2px 0 4px rgba(0,0,0,0.1);
+}
+
+.candle-stick.pink { background: linear-gradient(to bottom, #f48fb1, #e91e63); }
+.candle-stick.yellow { background: linear-gradient(to bottom, #fff176, #fdd835); }
+.candle-stick.blue { background: linear-gradient(to bottom, #81d4fa, #29b6f6); }
+.candle-stick.green { background: linear-gradient(to bottom, #a5d6a7, #66bb6a); }
+.candle-stick.orange { background: linear-gradient(to bottom, #ffcc80, #ffa726); }
+
+/* Birthday Cake Emoji — gentle bounce */
+.birthday-cake-icon {
+  font-size: 42px;
+  display: inline-block;
+  animation: birthday-sway 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.06));
+}
+
+/* Birthday Party Hat — decorative accent */
+.birthday-hat {
+  font-size: 24px;
+  display: inline-block;
+  transform: rotate(-12deg);
+  margin: 0 6px;
+}
+
+/* Birthday Sparkle Stars — tiny scattered decorations */
+.birthday-sparkle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  font-size: 14px;
+  animation: birthday-sparkle 2.5s ease-in-out infinite;
+}
+
+.birthday-sparkle:nth-child(1) { top: 5%; left: 10%; animation-delay: 0s; }
+.birthday-sparkle:nth-child(2) { top: 15%; right: 12%; animation-delay: 0.8s; }
+.birthday-sparkle:nth-child(3) { bottom: 25%; left: 8%; animation-delay: 1.6s; }
+.birthday-sparkle:nth-child(4) { bottom: 10%; right: 6%; animation-delay: 0.4s; }
+.birthday-sparkle:nth-child(5) { top: 45%; right: 4%; animation-delay: 1.2s; }
+
+/* Birthday Section Intro Animation */
+.birthday-theme .sec {
+  animation: birthday-pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Birthday Badge Tag — party themed */
+.birthday-theme .badge-tag {
+  background: linear-gradient(135deg, rgba(255, 248, 225, 0.95), rgba(255, 224, 178, 0.95));
+  border-color: rgba(255, 160, 0, 0.25);
+  color: #bf360c;
+}
+
+/* Birthday Event Picker — highlight birthday selection */
+.birthday-theme .event-btn.active {
+  background: linear-gradient(135deg, #ff8f00, #f4511e);
+  border-color: #ff8f00;
+  box-shadow: 0 0 0 2px #ffab40, 0 4px 16px rgba(255, 143, 0, 0.2);
+}
+
+/* Birthday Vibe Button Active */
+.birthday-theme .vibe-btn.active {
+  background: linear-gradient(135deg, #e65100, #bf360c);
+  border-color: #e65100;
+}
+
+/* Birthday confetti burst — CSS-only decorative dots */
+.birthday-confetti-container {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+.birthday-confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+  opacity: 0;
+}
+
+/* Birthday Eyebrow Text Glow */
+.birthday-theme .eyebrow {
+  position: relative;
+}
+
+/* Birthday Form Card — warm border */
+.birthday-theme .form-card {
+  border: 1.5px solid rgba(255, 183, 77, 0.2);
+  box-shadow: 0 16px 45px rgba(191, 54, 12, 0.04), 0 4px 16px rgba(0,0,0,0.03);
+}
+
+/* Birthday input focus */
+.birthday-theme input:focus,
+.birthday-theme textarea:focus {
+  border-color: #ff8f00;
+  box-shadow: 0 0 0 3px rgba(255, 143, 0, 0.12);
+}
+
+/* Birthday Responsive — tone down balloons on small screens */
+@media (max-width: 768px) {
+  .birthday-balloon {
+    font-size: 28px;
+  }
+  .birthday-balloon::after {
+    height: 28px;
+  }
+  .birthday-balloon:nth-child(5),
+  .birthday-balloon:nth-child(6) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .birthday-balloon {
+    font-size: 22px;
+  }
+  .birthday-balloon:nth-child(3),
+  .birthday-balloon:nth-child(4) {
+    display: none;
+  }
+  .birthday-candle-row {
+    gap: 10px;
+  }
+  .candle-stick {
+    height: 28px;
+    width: 10px;
+  }
+}
+
+/* =========================================================================
+   INTERACTIVE BIRTHDAY CAKE CEREMONY STYLES
+   ========================================================================= */
+
+.birthday-cake-scene-container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 2.5vh, 26px);
+  padding: 24px 16px 36px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: radial-gradient(circle at 50% 35%, rgba(255, 179, 71, 0.18) 0%, rgba(26, 17, 16, 0.96) 65%, #0d0706 100%);
+  color: #fff6ee;
+  transition: background 1.2s ease;
+}
+
+body:has(.birthday-cake-scene-container),
+body.birthday-theme:has(.birthday-cake-scene-container) {
+  background-color: #0d0706 !important;
+  background-image: radial-gradient(circle at 50% 35%, rgba(255, 179, 71, 0.18) 0%, rgba(26, 17, 16, 0.96) 65%, #0d0706 100%) !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden;
+}
+
+.birthday-cake-scene-container.lighting,
+.birthday-cake-scene-container.all_lit {
+  background: radial-gradient(circle at 50% 35%, rgba(255, 167, 38, 0.28) 0%, rgba(35, 18, 14, 0.97) 65%, #0f0705 100%);
+}
+
+.birthday-cake-scene-container.top_view,
+.birthday-cake-scene-container.blown {
+  background: radial-gradient(circle at 50% 45%, rgba(255, 183, 77, 0.24) 0%, rgba(32, 16, 14, 0.97) 65%, #0e0705 100%);
+}
+
+/* Festoon fairy lights hanging across the top */
+.cake-fairy-lights {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  padding: 0 5%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.fairy-bulb {
+  width: 12px;
+  height: 18px;
+  border-radius: 50% 50% 45% 45%;
+  position: relative;
+  animation: bulb-pulse 2.4s ease-in-out infinite alternate;
+}
+
+.fairy-bulb::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 3px;
+  width: 6px;
+  height: 4px;
+  background: #4a4a4a;
+  border-radius: 2px;
+}
+
+.fairy-bulb.b1 { background: #ffd54f; box-shadow: 0 0 14px #ffd54f; animation-delay: 0s; }
+.fairy-bulb.b2 { background: #ff80ab; box-shadow: 0 0 14px #ff80ab; animation-delay: 0.4s; }
+.fairy-bulb.b3 { background: #80d8ff; box-shadow: 0 0 14px #80d8ff; animation-delay: 0.8s; }
+.fairy-bulb.b4 { background: #b9f6ca; box-shadow: 0 0 14px #b9f6ca; animation-delay: 1.2s; }
+.fairy-bulb.b5 { background: #ffd54f; box-shadow: 0 0 14px #ffd54f; animation-delay: 0.2s; }
+.fairy-bulb.b6 { background: #ea80fc; box-shadow: 0 0 14px #ea80fc; animation-delay: 0.6s; }
+.fairy-bulb.b7 { background: #ffab91; box-shadow: 0 0 14px #ffab91; animation-delay: 1.0s; }
+.fairy-bulb.b8 { background: #80d8ff; box-shadow: 0 0 14px #80d8ff; animation-delay: 1.4s; }
+
+@keyframes bulb-pulse {
+  0% { opacity: 0.55; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1.08); }
+}
+
+/* Ambient Floating Sparkles */
+.cake-ambient-sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.sparkle-star {
+  position: absolute;
+  animation: sparkle-float 4s ease-in-out infinite alternate;
+}
+
+.sparkle-star.s1 { top: 22%; left: 12%; font-size: 20px; animation-duration: 3.5s; }
+.sparkle-star.s2 { top: 28%; right: 14%; font-size: 22px; animation-duration: 4.2s; animation-delay: 0.5s; }
+.sparkle-star.s3 { top: 62%; left: 8%; font-size: 18px; animation-duration: 3.8s; animation-delay: 1s; }
+.sparkle-star.s4 { top: 68%; right: 10%; font-size: 24px; animation-duration: 4.5s; animation-delay: 0.3s; }
+.sparkle-star.s5 { top: 82%; left: 22%; font-size: 16px; animation-duration: 3.2s; animation-delay: 1.2s; }
+
+@keyframes sparkle-float {
+  0% { transform: translateY(0px) rotate(0deg); opacity: 0.4; }
+  100% { transform: translateY(-16px) rotate(15deg); opacity: 0.95; }
+}
+
+/* Header Text */
+.cake-scene-header {
+  position: relative;
+  z-index: 10;
+  max-width: 640px;
+  margin-bottom: 24px;
+}
+
+.cake-scene-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ffb74d;
+  background: rgba(255, 183, 77, 0.12);
+  border: 1px solid rgba(255, 183, 77, 0.3);
+  border-radius: 999px;
+  padding: 5px 16px;
+  margin-bottom: 12px;
+}
+
+.cake-scene-title {
+  font-family: var(--font-fraunces), serif;
+  font-size: clamp(26px, 5vw, 42px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff8f0;
+  margin: 0 0 10px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+}
+
+.highlight-name {
+  font-family: var(--font-caveat), cursive;
+  font-size: 1.25em;
+  color: #ffab40;
+  text-shadow: 0 0 18px rgba(255, 171, 64, 0.6);
+  display: inline-block;
+}
+
+.cake-scene-subtitle {
+  font-size: clamp(14px, 2.8vw, 17px);
+  color: rgba(255, 245, 235, 0.85);
+  margin: 0;
+  min-height: 28px;
+  font-style: italic;
+  transition: all 0.4s ease;
+}
+
+/* =========================================================================
+   VIEWPORT A: FRONT PERSPECTIVE CAKE VIEW & 3D FLIPPER RIG
+   ========================================================================= */
+
+.cake-stage-3d {
+  position: relative;
+  width: min(440px, 94vw);
+  height: clamp(340px, 50vh, 430px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  user-select: none;
+}
+
+.cake-webgl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  outline: none;
+  touch-action: none;
+  z-index: 5;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.45));
+}
+
+/* Warm Light Halo that expands behind cake */
+.cake-illumination-halo {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  width: 320px;
+  height: 320px;
+  margin-left: -160px;
+  background: radial-gradient(circle, rgba(255, 171, 64, 0.38) 0%, rgba(255, 112, 67, 0.16) 45%, transparent 75%);
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(28px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  z-index: 1;
+}
+
+.cake-scene-footer-controls {
+  position: relative;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+  margin-top: 4px;
+}
+
+/* Interactive Trigger Button */
+.cake-prompt-action {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btn-light-candles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-fraunces), serif;
+  font-size: clamp(16px, 3.5vw, 19px);
+  font-weight: 700;
+  color: #3e2723;
+  background: linear-gradient(135deg, #ffe082 0%, #ffb300 50%, #ffa000 100%);
+  border: 2px solid #ffecb3;
+  border-radius: 999px;
+  padding: 14px 32px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(255, 160, 0, 0.35), 0 0 25px rgba(255, 215, 0, 0.2);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: pulse-light-btn 2.2s infinite ease-in-out;
+}
+
+.btn-light-candles:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 26px rgba(255, 160, 0, 0.5), 0 0 35px rgba(255, 215, 0, 0.4);
+}
+
+@keyframes pulse-light-btn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.tap-hint {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 8px;
+}
+
+/* Progress Status during slow lighting (No skipping!) */
+.candle-lighting-status {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.lighting-dots {
+  display: flex;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.5s ease;
+}
+
+.status-dot.active {
+  background: #ffb300;
+  border-color: #ffe082;
+  box-shadow: 0 0 12px #ffb300;
+  transform: scale(1.2);
+}
+
+.status-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffe082;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(255, 179, 0, 0.4);
+}
+
+.all-lit-banner {
+  margin-top: 20px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff8e1;
+  background: rgba(255, 179, 0, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  padding: 8px 22px;
+  border-radius: 999px;
+  box-shadow: 0 0 20px rgba(255, 179, 0, 0.35);
+  animation: glow-pulse 1.2s infinite alternate;
+}
+
+/* Top View Controls & Sender Ribbon */
+
+/* Loving Sender Ribbon below Cake */
+.cake-sender-ribbon {
+  margin-top: 20px;
+  position: relative;
+  z-index: 5;
+  background: linear-gradient(135deg, #fff0f3 0%, #ffd6e0 100%);
+  border: 1.5px solid #ff80ab;
+  padding: 8px 24px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  max-width: 90vw;
+}
+
+.ribbon-text {
+  font-size: 14px;
+  color: #880e4f;
+}
+
+.ribbon-text strong {
+  font-weight: 700;
+  color: #ad1457;
+}
+
+/* Action Buttons for Top View */
+.cake-top-actions {
+  margin-top: 24px;
+  position: relative;
+  z-index: 10;
+}
+
+.btn-blow-candles {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-fraunces), serif;
+  font-size: clamp(16px, 3.8vw, 20px);
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #e91e63 0%, #c2185b 50%, #880e4f 100%);
+  border: 2px solid #ff80ab;
+  border-radius: 999px;
+  padding: 16px 36px;
+  cursor: pointer;
+  box-shadow: 0 8px 26px rgba(233, 30, 99, 0.45), 0 0 25px rgba(255, 128, 171, 0.3);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: pulse-blow-btn 2.4s infinite ease-in-out;
+}
+
+.btn-blow-candles:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 10px 32px rgba(233, 30, 99, 0.6), 0 0 35px rgba(255, 128, 171, 0.5);
+}
+
+@keyframes pulse-blow-btn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.blown-completion-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  animation: wish-granted-enter 0.6s ease-out forwards;
+}
+
+@keyframes wish-granted-enter {
+  0% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.wish-granted-text {
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(22px, 5vw, 28px);
+  font-weight: 700;
+  color: #ffe082;
+  text-shadow: 0 0 16px rgba(255, 215, 0, 0.5);
+  margin: 0;
+}
+
+.btn-open-surprises {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-fraunces), serif;
+  font-size: clamp(16px, 3.8vw, 19px);
+  font-weight: 700;
+  color: #3e2723;
+  background: linear-gradient(135deg, #ffd54f 0%, #ffb300 50%, #ffa000 100%);
+  border: 2px solid #ffecb3;
+  border-radius: 999px;
+  padding: 16px 36px;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(255, 179, 0, 0.5), 0 0 35px rgba(255, 215, 0, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: pulse-light-btn 2s infinite ease-in-out;
+}
+
+.btn-open-surprises:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  .front-candles-row {
+    gap: 12px;
+  }
+  .candle-wax-stick {
+    width: 12px;
+    height: 44px;
+  }
+  .candle-flame-main {
+    width: 12px;
+    height: 20px;
+  }
+  .cake-tier.tier-top {
+    height: 64px;
+  }
+  .cake-tier.tier-bottom {
+    height: 76px;
+  }
+  .btn-blow-candles,
+  .btn-open-surprises,
+  .btn-light-candles {
+    padding: 14px 24px;
+  }
+}

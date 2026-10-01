@@ -656,7 +656,7 @@ function ECardApp() {
   return (
     <div className={`page-container ${isBirthdayEvent ? 'birthday-theme' : ''}`}>
       {/* Birthday Decorative Balloons */}
-      {isBirthdayEvent && viewerStep !== null && (
+      {isBirthdayEvent && viewerStep !== null && viewerStep >= 2 && (
         <>
           <div className="birthday-balloon" aria-hidden="true">🎈</div>
           <div className="birthday-balloon" aria-hidden="true">🎈</div>
