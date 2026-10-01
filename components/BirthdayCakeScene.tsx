@@ -253,6 +253,43 @@ const createTopIcingTexture = (receiverName: string): THREE.CanvasTexture => {
   return texture;
 };
 
+// Procedural soft feathered smoke puff texture
+const createSmokeTexture = (): THREE.CanvasTexture => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
+    gradient.addColorStop(0.2, 'rgba(240, 240, 240, 0.6)');
+    gradient.addColorStop(0.45, 'rgba(220, 220, 220, 0.28)');
+    gradient.addColorStop(0.75, 'rgba(200, 200, 200, 0.08)');
+    gradient.addColorStop(1, 'rgba(180, 180, 180, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 128, 128);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  return texture;
+};
+
+interface WiggleSmokeParticle {
+  sprite: THREE.Sprite;
+  candleIdx: number;
+  initialY: number;
+  delay: number;
+  baseSpeed: number;
+  curY: number;
+  wiggleFreq: number;
+  wiggleAmp: number;
+  wigglePhase: number;
+  baseScale: number;
+  maxLife: number;
+  age: number;
+  spinSpeed: number;
+}
+
 export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
   data,
   onOpenEnvelope,
@@ -278,7 +315,9 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
   // References to 3D objects for dynamic animation
   const flameMeshesRef = useRef<THREE.Group[]>([]);
   const pointLightsRef = useRef<THREE.PointLight[]>([]);
-  const smokeGroupsRef = useRef<THREE.Group[]>([]);
+  const smokeParticlesRef = useRef<WiggleSmokeParticle[]>([]);
+  const emberMeshesRef = useRef<THREE.Mesh[]>([]);
+  const blownStartTimeRef = useRef<number>(0);
   const cakeGroupRef = useRef<THREE.Group | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -400,6 +439,7 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
 
     playBlowOutSound();
     setPhase('blown');
+    blownStartTimeRef.current = 0;
 
     // Massive double-burst confetti celebration
     try {
@@ -429,10 +469,10 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
       // Ignore
     }
 
-    // Automatically transition to the card section after celebration
+    // Give ample time for candles to completely blow out, smoke to curl away, and celebration to complete
     setTimeout(() => {
       if (onNext) onNext();
-    }, 1400);
+    }, 4200);
   };
 
   const handleUnlock = () => {
@@ -690,7 +730,9 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
     // ----------------------------------------------------
     const flames: THREE.Group[] = [];
     const lights: THREE.PointLight[] = [];
-    const smokes: THREE.Group[] = [];
+    const embers: THREE.Mesh[] = [];
+    const smokeParticles: WiggleSmokeParticle[] = [];
+    const smokeTexture = createSmokeTexture();
 
     const candleRadius = 2.05; // radius on top cap, leaving center wide open for name
 
@@ -726,6 +768,19 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
       const wick = new THREE.Mesh(wickGeo, wickMat);
       wick.position.y = 1.38;
       candleHolder.add(wick);
+
+      // Smoldering red-orange ember tip on wick when blown out
+      const emberGeo = new THREE.SphereGeometry(0.034, 8, 8);
+      const emberMat = new THREE.MeshBasicMaterial({
+        color: 0xff3d00,
+        transparent: true,
+        opacity: 0,
+      });
+      const emberMesh = new THREE.Mesh(emberGeo, emberMat);
+      emberMesh.position.y = 1.48;
+      emberMesh.visible = false;
+      candleHolder.add(emberMesh);
+      embers.push(emberMesh);
 
       // 3D Teardrop Flame Group
       const flameGroup = new THREE.Group();
@@ -765,32 +820,47 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
       candleHolder.add(candleLight);
       lights.push(candleLight);
 
-      // Smoke Plume Group (for blown state)
-      const smokeGroup = new THREE.Group();
-      smokeGroup.position.set(0, 1.45, 0);
-      smokeGroup.visible = false;
+      // Organic Feathered Smoke Wisps (14 staggered particles per candle)
+      const candleSmokeGroup = new THREE.Group();
+      candleSmokeGroup.position.set(0, 1.48, 0);
+      candleHolder.add(candleSmokeGroup);
 
-      for (let s = 0; s < 3; s++) {
-        const sMesh = new THREE.Mesh(
-          new THREE.SphereGeometry(0.08 + s * 0.04, 12, 12),
-          new THREE.MeshBasicMaterial({
-            color: 0xdddddd,
-            transparent: true,
-            opacity: 0.6,
-          })
-        );
-        sMesh.position.set((Math.random() - 0.5) * 0.1, s * 0.2, (Math.random() - 0.5) * 0.1);
-        smokeGroup.add(sMesh);
+      for (let s = 0; s < 14; s++) {
+        const sMat = new THREE.SpriteMaterial({
+          map: smokeTexture,
+          transparent: true,
+          opacity: 0,
+          depthWrite: false,
+          blending: THREE.NormalBlending,
+        });
+        const sSprite = new THREE.Sprite(sMat);
+        sSprite.visible = false;
+        candleSmokeGroup.add(sSprite);
+
+        smokeParticles.push({
+          sprite: sSprite,
+          candleIdx: i,
+          initialY: 0.05,
+          delay: s * 0.13 + Math.random() * 0.04,
+          baseSpeed: 0.62 + Math.random() * 0.22,
+          curY: 0,
+          wiggleFreq: 2.8 + Math.random() * 1.4,
+          wiggleAmp: 0.14 + Math.random() * 0.06,
+          wigglePhase: i * 1.25 + s * 0.45,
+          baseScale: 0.16 + Math.random() * 0.05,
+          maxLife: 2.7 + Math.random() * 0.5,
+          age: 0,
+          spinSpeed: (Math.random() - 0.5) * 1.4,
+        });
       }
-      candleHolder.add(smokeGroup);
-      smokes.push(smokeGroup);
 
       topTierGroup.add(candleHolder);
     }
 
     flameMeshesRef.current = flames;
     pointLightsRef.current = lights;
-    smokeGroupsRef.current = smokes;
+    emberMeshesRef.current = embers;
+    smokeParticlesRef.current = smokeParticles;
 
     cakeGroup.add(topTierGroup);
 
@@ -884,18 +954,69 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
         }
       });
 
-      // 2. Smoke particles when blown out
+      // 2. Realistic Wiggling Smoke Wisps & Smoldering Ember when blown out
       if (currentPhase === 'blown') {
-        smokes.forEach((sGroup) => {
-          sGroup.visible = true;
-          sGroup.position.y += delta * 0.45;
-          sGroup.children.forEach((child) => {
-            const m = child as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
-            m.scale.multiplyScalar(1 + delta * 0.6);
-            if (m.material.opacity > 0.01) {
-              m.material.opacity -= delta * 0.35;
-            }
-          });
+        if (blownStartTimeRef.current === 0) {
+          blownStartTimeRef.current = now;
+        }
+        const blownElapsed = (now - blownStartTimeRef.current) / 1000;
+
+        // A. Wick glowing ember: bright orange-red at first, flickers and smolders to dark charcoal
+        emberMeshesRef.current.forEach((emb, eIdx) => {
+          if (blownElapsed < 2.6) {
+            emb.visible = true;
+            const emberProgress = blownElapsed / 2.6;
+            const flicker = 0.85 + Math.sin(now * 0.02 + eIdx * 2.5) * 0.15;
+            const mat = emb.material as THREE.MeshBasicMaterial;
+            mat.opacity = (1 - emberProgress) * 0.95 * flicker;
+            const r = THREE.MathUtils.lerp(1.0, 0.22, emberProgress);
+            const g = THREE.MathUtils.lerp(0.24, 0.04, emberProgress);
+            mat.color.setRGB(r, g, 0);
+          } else {
+            emb.visible = false;
+          }
+        });
+
+        // B. Feathered billowing smoke puffs wiggling upwards
+        smokeParticles.forEach((sp) => {
+          if (blownElapsed < sp.delay) {
+            sp.sprite.visible = false;
+            return;
+          }
+
+          sp.age += delta;
+          const progress = Math.min(sp.age / sp.maxLife, 1);
+
+          if (progress >= 1) {
+            sp.sprite.visible = false;
+            return;
+          }
+
+          sp.sprite.visible = true;
+
+          // Rises upward with natural thermal deceleration
+          sp.curY += delta * sp.baseSpeed * (1 - progress * 0.35);
+
+          // Natural harmonic S-curve curl wiggle in 3D
+          const amplitudeScale = 0.6 + Math.pow(progress, 0.7) * 2.4;
+          const waveX = Math.sin(blownElapsed * sp.wiggleFreq + sp.wigglePhase) * sp.wiggleAmp * amplitudeScale;
+          const waveZ = Math.cos(blownElapsed * (sp.wiggleFreq * 0.82) + sp.wigglePhase) * (sp.wiggleAmp * 0.72) * amplitudeScale;
+
+          sp.sprite.position.set(waveX, sp.initialY + sp.curY, waveZ);
+
+          // Organic rotational swirl
+          sp.sprite.material.rotation += delta * sp.spinSpeed;
+
+          // Natural soft expansion as smoke billows into air
+          const scale = sp.baseScale * (1 + progress * 4.2);
+          sp.sprite.scale.set(scale, scale, 1);
+
+          // Soft realistic opacity curve: gentle fade in, then dissipates smoothly
+          if (progress < 0.14) {
+            sp.sprite.material.opacity = (progress / 0.14) * 0.48;
+          } else {
+            sp.sprite.material.opacity = Math.max(0, 0.48 * Math.pow(1 - (progress - 0.14) / 0.86, 1.4));
+          }
         });
       }
 
@@ -1095,9 +1216,6 @@ export const BirthdayCakeScene: React.FC<BirthdayCakeSceneProps> = ({
                 Baked with all my love for you, from <strong>{senderName}</strong> 💖
               </span>
             </div>
-            <p className="tap-hint" style={{ marginTop: 12, fontSize: 15, color: '#ffe082', fontWeight: 600 }}>
-              🌬️ Tap anywhere on the screen to blow out the candles ✨
-            </p>
           </div>
         )}
 
