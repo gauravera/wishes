@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { getSurprises, saveSurprises, saveUploadedFile } from '@/lib/storage';
+import { saveSurprise, saveUploadedFile } from '@/lib/storage';
 import { SurpriseData } from '@/types/ecard';
 
 export const dynamic = 'force-dynamic';
@@ -192,9 +192,7 @@ export async function POST(req: NextRequest) {
       expiresAt: expiresAt,
     };
 
-    const surprises = getSurprises();
-    surprises[sid] = newRecord;
-    saveSurprises(surprises);
+    await saveSurprise(newRecord);
 
     console.log(`[Next.js API] Created E-Card ${sid} for ${newRecord.receiver} from ${newRecord.sender} (Expires: ${expiresAt})`);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 
 interface ShareModalProps {
@@ -22,66 +22,104 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   onClose,
   onUpload,
 }) => {
-  const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
+  // Generate high-resolution QR Data URL whenever shareUrl is ready
   useEffect(() => {
-    if (status === 'done' && shareUrl && qrCanvasRef.current) {
-      QRCode.toCanvas(
-        qrCanvasRef.current,
-        shareUrl,
-        {
-          width: 230,
-          margin: 1.5,
-          color: {
-            dark: '#1b3842',
-            light: '#ffffff',
-          },
-          errorCorrectionLevel: 'M',
+    if (shareUrl) {
+      QRCode.toDataURL(shareUrl, {
+        width: 360,
+        margin: 1.5,
+        color: {
+          dark: '#1b3842',
+          light: '#ffffff',
         },
-        (error) => {
-          if (error) console.error('QR code generation error:', error);
-        }
-      );
+        errorCorrectionLevel: 'M',
+      })
+        .then((url) => {
+          setQrDataUrl(url);
+        })
+        .catch((err) => {
+          console.error('QR code generation error:', err);
+        });
     }
-  }, [status, shareUrl]);
+  }, [shareUrl]);
 
   if (!isOpen) return null;
 
   const handleShare = async () => {
-    if (!shareUrl) return;
+    if (!shareUrl && !qrDataUrl) return;
+    setIsSharing(true);
 
-    // Check if Native Web Share is available (phones/tablets/supported browsers)
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({
-          title: 'A Special E-Card Surprise For You 💌',
-          text: 'I made a special digital surprise e-card for you! Open the link to unbox it ✿',
-          url: shareUrl,
-        });
-        return;
-      } catch (err: any) {
-        // If user cancelled share sheet, do nothing; if error, fallback to clipboard
-        if (err?.name === 'AbortError') return;
-      }
-    }
+    try {
+      // 1. Try sharing the actual QR code PNG image file via Web Share API
+      if (qrDataUrl && typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          const res = await fetch(qrDataUrl);
+          const blob = await res.blob();
+          const qrFile = new File(
+            [blob],
+            `ecard-qr-${surpriseId ? surpriseId.slice(0, 8) : 'share'}.png`,
+            { type: 'image/png' }
+          );
 
-    // Fallback: Copy link to clipboard
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2500);
-      } catch (err) {
-        console.error('Failed to copy to clipboard:', err);
+          if (navigator.canShare && navigator.canShare({ files: [qrFile] })) {
+            await navigator.share({
+              files: [qrFile],
+              title: 'A Special E-Card Surprise For You 💌',
+              text: `Scan this QR code or click the link to unbox your surprise! 💌\n${shareUrl}`,
+            });
+            setIsSharing(false);
+            return;
+          }
+        } catch (err: any) {
+          if (err?.name === 'AbortError') {
+            setIsSharing(false);
+            return;
+          }
+          console.warn('Native file share failed, falling back to text/link share:', err);
+        }
       }
+
+      // 2. Fallback to native text/url share if files sharing is not supported
+      if (typeof navigator !== 'undefined' && navigator.share && shareUrl) {
+        try {
+          await navigator.share({
+            title: 'A Special E-Card Surprise For You 💌',
+            text: `I made a special digital surprise e-card for you! Open the link to unbox it ✿\n${shareUrl}`,
+            url: shareUrl,
+          });
+          setIsSharing(false);
+          return;
+        } catch (err: any) {
+          if (err?.name === 'AbortError') {
+            setIsSharing(false);
+            return;
+          }
+        }
+      }
+
+      // 3. Fallback: Copy link to clipboard
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2500);
+        } catch (err) {
+          console.error('Failed to copy to clipboard:', err);
+        }
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
   const handleDownloadQR = () => {
-    if (qrCanvasRef.current) {
+    if (qrDataUrl) {
       const a = document.createElement('a');
-      a.href = qrCanvasRef.current.toDataURL('image/png');
+      a.href = qrDataUrl;
       a.download = `ecard-qr-${surpriseId ? surpriseId.slice(0, 8) : 'share'}.png`;
       a.click();
     }
@@ -196,28 +234,43 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               ⏱️ Valid for 24 Hours • Temporary Storage
             </div>
 
-            {/* QR Code Canvas */}
+            {/* QR Code Container */}
             <div
               style={{
                 display: 'flex',
                 justifyContent: 'center',
+                alignItems: 'center',
                 margin: '8px auto 16px',
                 background: '#ffffff',
                 padding: '12px',
                 borderRadius: '18px',
                 boxShadow: '0 6px 20px rgba(0,0,0,0.07)',
                 border: '1px solid var(--line)',
-                width: 'fit-content',
+                width: 244,
+                height: 244,
               }}
             >
-              <canvas ref={qrCanvasRef} style={{ borderRadius: 10, display: 'block' }} />
+              {qrDataUrl ? (
+                <img
+                  src={qrDataUrl}
+                  alt="E-Card QR Code"
+                  style={{
+                    width: 220,
+                    height: 220,
+                    borderRadius: 10,
+                    display: 'block',
+                  }}
+                />
+              ) : (
+                <div style={{ color: 'var(--mut)', fontSize: 14 }}>Generating QR…</div>
+              )}
             </div>
 
             <p style={{ fontSize: 13.5, color: 'var(--mut)', margin: '0 0 18px', lineHeight: 1.4 }}>
-              Scan the QR code with your phone camera or share it directly with your partner!
+              Scan the QR code with your phone camera or share the QR code directly with your partner!
             </p>
 
-            {/* Exactly Two Action Buttons: Share QR and Download QR */}
+            {/* Action Buttons: Share QR and Download QR */}
             <div
               style={{
                 display: 'grid',
@@ -230,6 +283,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 type="button"
                 className="btn primary"
                 onClick={handleShare}
+                disabled={isSharing || !qrDataUrl}
                 style={{
                   padding: '12px 14px',
                   fontSize: 14.5,
@@ -240,13 +294,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                   gap: 6,
                 }}
               >
-                {copied ? 'Copied! ✓' : '📤 Share QR'}
+                {copied ? 'Copied Link! ✓' : isSharing ? 'Sharing…' : '📤 Share QR'}
               </button>
 
               <button
                 type="button"
                 className="btn ghost"
                 onClick={handleDownloadQR}
+                disabled={!qrDataUrl}
                 style={{
                   padding: '12px 14px',
                   fontSize: 14.5,

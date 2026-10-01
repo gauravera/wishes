@@ -24,7 +24,10 @@ export const ViewerCertificate: React.FC<ViewerCertificateProps> = ({ data, onNe
       ? data.certificateTerms
       : preset.certificate.terms;
 
-  const witnessName = data.witnessName || preset.certificate.witness || 'the cat';
+  const rawWitness = data.witnessName || preset.certificate.witness || 'the cat';
+  const witnessName = rawWitness.toLowerCase().includes('(official witness)')
+    ? rawWitness
+    : `${rawWitness} (official witness)`;
   const witnessAvatar = data.witnessPhotoUrl || getEventMascot(data.eventType);
   const certPhoto = data.photos?.[0] || '/p1.jpeg';
 
@@ -128,7 +131,7 @@ export const ViewerCertificate: React.FC<ViewerCertificateProps> = ({ data, onNe
                   }}
                 />
                 <span className="cert-sig-hand">
-                  {witnessName} (official witness)
+                  {witnessName}
                 </span>
               </div>
               <div className="cert-sig-underline" />

@@ -4,7 +4,7 @@ import { getSurprises } from '@/lib/storage';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const surprises = getSurprises();
+  const surprises = await getSurprises();
   const list = Object.values(surprises).map((s) => ({
     id: s.id,
     sender: s.sender,

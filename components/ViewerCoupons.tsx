@@ -31,6 +31,38 @@ export const ViewerCoupons: React.FC<ViewerCouponsProps> = ({ data, onNext }) =>
     setPoppedCoupon({ text, idx });
   };
 
+  const [copiedShare, setCopiedShare] = useState(false);
+
+  const handleShareVoucher = async (voucherText: string) => {
+    const senderName = data.sender || 'you';
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const shareMessage = `Hey ${senderName}! Look what I just scratched & unlocked on the special e-card you sent me: “${voucherText}” 🎟️💖`;
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: `Promise Unlocked 🎟️💖`,
+          text: shareMessage,
+          url: shareUrl,
+        });
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
+
+    // Fallback to clipboard
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(`${shareMessage}\n${shareUrl}`);
+        setCopiedShare(true);
+        setTimeout(() => setCopiedShare(false), 2500);
+      } catch (e) {
+        console.error('Clipboard copy failed:', e);
+      }
+    }
+  };
+
   const allRevealed = activeCoupons.every((_, idx) => revealedSet.includes(idx));
 
   return (
@@ -81,6 +113,15 @@ export const ViewerCoupons: React.FC<ViewerCouponsProps> = ({ data, onNext }) =>
           }}
         >
           <div className="scratch-modal-box" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="close-x"
+              onClick={() => setPoppedCoupon(null)}
+              aria-label="Close"
+              style={{ top: 12, right: 14 }}
+            >
+              ✕
+            </button>
             <div className="scratch-modal-ribbon">✨ PROMISE UNLOCKED ✨</div>
             <div className="scratch-modal-badge">VOUCHER #{poppedCoupon.idx + 1}</div>
             <div className="scratch-modal-quote">
@@ -89,17 +130,29 @@ export const ViewerCoupons: React.FC<ViewerCouponsProps> = ({ data, onNext }) =>
             <p className="scratch-modal-sub">
               This special promise is sealed and officially redeemable anytime! 💖
             </p>
-            <div style={{ marginTop: 22 }}>
+            <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
                 type="button"
                 className="btn primary full"
-                onClick={() => {
-                  setPoppedCoupon(null);
-                  if (onNext) onNext();
-                }}
+                style={{ fontSize: 15, padding: '12px 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                onClick={() => handleShareVoucher(poppedCoupon.text)}
               >
-                Read Your Letter →
+                {copiedShare ? 'Copied to Clipboard! ✓' : '📤 Share them to know what you got'}
               </button>
+
+              {onNext && (
+                <button
+                  type="button"
+                  className="btn ghost full"
+                  style={{ fontSize: 13.5, padding: '9px 14px' }}
+                  onClick={() => {
+                    setPoppedCoupon(null);
+                    if (onNext) onNext();
+                  }}
+                >
+                  Read Your Letter →
+                </button>
+              )}
             </div>
           </div>
         </div>
