@@ -51,13 +51,15 @@ export const ViewerCertificate: React.FC<ViewerCertificateProps> = ({ data, onNe
     }
   };
 
+  const isBirthday = data.eventType === 'birthday';
+
   return (
     <div className="sec sec-cert" style={{ maxWidth: 640 }}>
       <p className="eyebrow" style={{ color: '#d48b70', letterSpacing: '0.15em' }}>
-        OFFICIALLY OFFICIAL
+        {isBirthday ? '🎉 BIRTHDAY HONORS 🎉' : 'OFFICIALLY OFFICIAL'}
       </p>
       <h2 className="title sub" style={{ margin: '4px 0 20px' }}>
-        the official certificate
+        {isBirthday ? 'your official birthday certificate' : 'the official certificate'}
       </h2>
 
       <div ref={certRef} className="cert-card">
@@ -152,7 +154,7 @@ export const ViewerCertificate: React.FC<ViewerCertificateProps> = ({ data, onNe
       {onNext && (
         <div style={{ marginTop: 36 }}>
           <button type="button" className="btn primary" onClick={onNext}>
-            see special promises →
+            {isBirthday ? 'unwrap your birthday gifts →' : 'see special promises →'}
           </button>
         </div>
       )}

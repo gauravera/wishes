@@ -128,6 +128,22 @@ function ECardApp() {
     }
   };
 
+  // Birthday theme class toggle
+  const isBirthdayEvent = isViewMode
+    ? activeSurpriseData?.eventType === 'birthday'
+    : currentEvent === 'birthday';
+
+  useEffect(() => {
+    if (isBirthdayEvent) {
+      document.body.classList.add('birthday-theme');
+    } else {
+      document.body.classList.remove('birthday-theme');
+    }
+    return () => {
+      document.body.classList.remove('birthday-theme');
+    };
+  }, [isBirthdayEvent]);
+
   // Synchronize content and theme when event or vibe changes
   const applyEventAndVibe = (ev: EventType, vb: VibeType) => {
     const override = VIBE_CONTENT_MAP[ev]?.[vb] || VIBE_CONTENT_MAP.boyfriend.romantic;
@@ -618,7 +634,18 @@ function ECardApp() {
   };
 
   return (
-    <div className="page-container">
+    <div className={`page-container ${isBirthdayEvent ? 'birthday-theme' : ''}`}>
+      {/* Birthday Decorative Balloons */}
+      {isBirthdayEvent && viewerStep !== null && (
+        <>
+          <div className="birthday-balloon" aria-hidden="true">🎈</div>
+          <div className="birthday-balloon" aria-hidden="true">🎈</div>
+          <div className="birthday-balloon" aria-hidden="true">🎈</div>
+          <div className="birthday-balloon" aria-hidden="true">🎈</div>
+          <div className="birthday-balloon" aria-hidden="true">🎈</div>
+          <div className="birthday-balloon" aria-hidden="true">🎈</div>
+        </>
+      )}
       {/* Background Audio Player */}
       <audio
         ref={bgAudioRef}

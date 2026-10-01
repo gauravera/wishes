@@ -33,12 +33,20 @@ export const ViewerWall: React.FC<ViewerWallProps> = ({ data, onNext }) => {
     }));
   };
 
+  const isBirthday = data.eventType === 'birthday';
+
   return (
     <div className="sec">
-      <p className="eyebrow">THE MEMORY WALL</p>
-      <h2 className="title sub">flip one over</h2>
+      <p className="eyebrow">
+        {isBirthday ? 'YOUR BIRTHDAY WALL' : 'THE MEMORY WALL'}
+      </p>
+      <h2 className="title sub">
+        {isBirthday ? 'every year, a new memory' : 'flip one over'}
+      </h2>
       <p className="hand" style={{ fontSize: 26 }}>
-        every photo has something written on the back ✿
+        {isBirthday
+          ? 'tap a photo — there\'s a birthday note behind each one 🎂'
+          : 'every photo has something written on the back ✿'}
       </p>
 
       <div className="wall-grid">
@@ -73,7 +81,7 @@ export const ViewerWall: React.FC<ViewerWallProps> = ({ data, onNext }) => {
       {onNext && (
         <div style={{ marginTop: 36 }}>
           <button type="button" className="btn" onClick={onNext}>
-            see certificate →
+            {isBirthday ? 'see your birthday certificate →' : 'see certificate →'}
           </button>
         </div>
       )}

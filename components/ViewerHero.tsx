@@ -103,11 +103,32 @@ export const ViewerHero: React.FC<ViewerHeroProps> = ({
   const albumArt = data.photos?.[1] || minis[0] || '/assets/mini1.gif';
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  const isBirthday = data.eventType === 'birthday';
+
   return (
     <div className="sec sec-hero">
       <p className="eyebrow">{data.eventTitle || 'SPECIAL SURPRISE'}</p>
-      <h1 className="title">To {data.receiver}</h1>
-      <span className="ribbon">from {data.sender} ✿</span>
+      {isBirthday && (
+        <div className="birthday-candle-row" style={{ marginBottom: 8, marginTop: 0 }}>
+          <div className="birthday-candle">
+            <div className="candle-flame" />
+            <div className="candle-wick" />
+            <div className="candle-stick pink" />
+          </div>
+          <div className="birthday-candle">
+            <div className="candle-flame" />
+            <div className="candle-wick" />
+            <div className="candle-stick yellow" />
+          </div>
+          <div className="birthday-candle">
+            <div className="candle-flame" />
+            <div className="candle-wick" />
+            <div className="candle-stick blue" />
+          </div>
+        </div>
+      )}
+      <h1 className="title">{isBirthday ? `Happy Birthday, ${data.receiver}!` : `To ${data.receiver}`}</h1>
+      <span className="ribbon">from {data.sender} {isBirthday ? '🎂' : '✿'}</span>
 
       {/* Main Flank Container: Left Stickers, Center Content, Right Stickers */}
       <div className="hero-flank-container">
@@ -202,10 +223,12 @@ export const ViewerHero: React.FC<ViewerHeroProps> = ({
       </div>
 
       <p className="hand" style={{ fontSize: 22, margin: '20px 0 12px' }}>
-        press play — this melody belongs to us ✿
+        {isBirthday
+          ? 'press play — your birthday soundtrack awaits 🎉'
+          : 'press play — this melody belongs to us ✿'}
       </p>
       <button type="button" className="btn" onClick={onNext}>
-        see our album →
+        {isBirthday ? 'see your birthday wall →' : 'see our album →'}
       </button>
     </div>
   );

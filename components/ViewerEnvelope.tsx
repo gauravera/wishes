@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { SurpriseData } from '@/types/ecard';
 import { getEventMascot } from '@/lib/constants';
+import { BirthdayCakeScene } from '@/components/BirthdayCakeScene';
 
 interface ViewerEnvelopeProps {
   data: SurpriseData;
@@ -50,6 +51,16 @@ export const ViewerEnvelope: React.FC<ViewerEnvelopeProps> = ({
   onOpenEnvelope,
   onNext,
 }) => {
+  if (data.eventType === 'birthday') {
+    return (
+      <BirthdayCakeScene
+        data={data}
+        onOpenEnvelope={onOpenEnvelope}
+        onNext={onNext}
+      />
+    );
+  }
+
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
   const [answerInput, setAnswerInput] = useState('');
   const [passcodeError, setPasscodeError] = useState('');
@@ -87,12 +98,33 @@ export const ViewerEnvelope: React.FC<ViewerEnvelopeProps> = ({
       onOpenEnvelope();
     }
     try {
+      const birthdayConfettiColors = ['#ff7043', '#ffa000', '#ffeb3b', '#e91e63', '#29b6f6', '#66bb6a'];
+      const defaultConfettiColors = ['#e07a5f', '#3f9482', '#e8a44e', '#d85a7f', '#ffffff'];
+
       confetti({
-        particleCount: 80,
-        spread: 70,
+        particleCount: isBirthday ? 120 : 80,
+        spread: isBirthday ? 90 : 70,
         origin: { y: 0.6 },
-        colors: ['#e07a5f', '#3f9482', '#e8a44e', '#d85a7f', '#ffffff'],
+        colors: isBirthday ? birthdayConfettiColors : defaultConfettiColors,
       });
+
+      // Birthday gets a second burst for extra celebration
+      if (isBirthday) {
+        setTimeout(() => {
+          confetti({
+            particleCount: 60,
+            spread: 120,
+            origin: { y: 0.4, x: 0.3 },
+            colors: birthdayConfettiColors,
+          });
+          confetti({
+            particleCount: 60,
+            spread: 120,
+            origin: { y: 0.4, x: 0.7 },
+            colors: birthdayConfettiColors,
+          });
+        }, 300);
+      }
     } catch (e) {
       // Ignore
     }
@@ -116,8 +148,51 @@ export const ViewerEnvelope: React.FC<ViewerEnvelopeProps> = ({
     }
   };
 
+  const isBirthday = data.eventType === 'birthday';
+
   return (
     <div className="envelope-wrapper">
+      {/* Birthday Sparkle Decorations */}
+      {isBirthday && (
+        <>
+          <span className="birthday-sparkle" aria-hidden="true">✨</span>
+          <span className="birthday-sparkle" aria-hidden="true">⭐</span>
+          <span className="birthday-sparkle" aria-hidden="true">✨</span>
+          <span className="birthday-sparkle" aria-hidden="true">⭐</span>
+          <span className="birthday-sparkle" aria-hidden="true">✨</span>
+        </>
+      )}
+
+      {/* Birthday Candle Row */}
+      {isBirthday && (
+        <div className="birthday-candle-row">
+          <div className="birthday-candle">
+            <div className="candle-flame" />
+            <div className="candle-wick" />
+            <div className="candle-stick pink" />
+          </div>
+          <div className="birthday-candle">
+            <div className="candle-flame" />
+            <div className="candle-wick" />
+            <div className="candle-stick yellow" />
+          </div>
+          <div className="birthday-candle">
+            <div className="candle-flame" />
+            <div className="candle-wick" />
+            <div className="candle-stick blue" />
+          </div>
+          <div className="birthday-candle">
+            <div className="candle-flame" />
+            <div className="candle-wick" />
+            <div className="candle-stick green" />
+          </div>
+          <div className="birthday-candle">
+            <div className="candle-flame" />
+            <div className="candle-wick" />
+            <div className="candle-stick orange" />
+          </div>
+        </div>
+      )}
       <div
         className={`artisan-envelope ${isOpening ? 'opened' : ''}`}
         onClick={handleEnvelopeClick}
@@ -196,11 +271,15 @@ export const ViewerEnvelope: React.FC<ViewerEnvelopeProps> = ({
       </div>
 
       <div className="tap-prompt-container" onClick={handleEnvelopeClick}>
-        <span className="tap-sparkle">✨</span>
+        <span className="tap-sparkle">{isBirthday ? '🎂' : '✨'}</span>
         <p className="tap-prompt">
-          {isOpening ? 'TAP LETTER OR RIGHT SIDE TO CONTINUE →' : 'TAP ENVELOPE TO OPEN'}
+          {isOpening
+            ? 'TAP LETTER OR RIGHT SIDE TO CONTINUE →'
+            : isBirthday
+              ? 'TAP TO OPEN YOUR BIRTHDAY SURPRISE'
+              : 'TAP ENVELOPE TO OPEN'}
         </p>
-        <span className="tap-sparkle">✨</span>
+        <span className="tap-sparkle">{isBirthday ? '🎉' : '✨'}</span>
       </div>
 
       {/* Secret Passcode Modal */}

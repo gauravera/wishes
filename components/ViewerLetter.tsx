@@ -59,13 +59,15 @@ export const ViewerLetter: React.FC<ViewerLetterProps> = ({
 
   const validPhotos = (data.photos || []).filter(Boolean);
 
+  const isBirthday = data.eventType === 'birthday';
+
   return (
     <div className="sec sec-letter">
       <p className="hand" style={{ fontSize: 24, color: 'var(--teal-d)' }}>
-        ✿ one last thing ✿
+        {isBirthday ? '🎂 the best part 🎂' : '✿ one last thing ✿'}
       </p>
       <h1 className="title sub" style={{ margin: '4px 0 24px' }}>
-        A Note For You
+        {isBirthday ? 'Your Birthday Letter' : 'A Note For You'}
       </h1>
 
       {/* Voice Note Cassette Player */}

@@ -33,16 +33,20 @@ export const ViewerCoupons: React.FC<ViewerCouponsProps> = ({ data, onNext }) =>
 
   const allRevealed = activeCoupons.every((_, idx) => revealedSet.includes(idx));
 
+  const isBirthday = data.eventType === 'birthday';
+
   return (
     <div className="sec sec-coupons">
-      <p className="eyebrow">SCRATCH TO REVEAL</p>
+      <p className="eyebrow">
+        {isBirthday ? 'UNWRAP YOUR GIFTS' : 'SCRATCH TO REVEAL'}
+      </p>
       <h1 className="title" style={{ fontSize: 'clamp(28px, 6vw, 44px)', margin: '4px 0 10px' }}>
-        Special Love Promise
+        {isBirthday ? 'Birthday Gift Vouchers' : 'Special Love Promise'}
       </h1>
       <p className="hand" style={{ fontSize: 24, color: 'var(--teal-d)', marginBottom: 24 }}>
         {selectedIdx === null
-          ? 'click a voucher to pick it & start scratching ✿'
-          : 'rub with your finger or mouse to scratch & reveal ✿'}
+          ? (isBirthday ? 'pick a gift box to unwrap your birthday surprise 🎁' : 'click a voucher to pick it & start scratching ✿')
+          : (isBirthday ? 'scratch to reveal your birthday gift! 🎉' : 'rub with your finger or mouse to scratch & reveal ✿')}
       </p>
 
       {/* Scratch Grid */}
@@ -98,7 +102,7 @@ export const ViewerCoupons: React.FC<ViewerCouponsProps> = ({ data, onNext }) =>
                   if (onNext) onNext();
                 }}
               >
-                Read Your Letter →
+                {isBirthday ? 'Read Your Birthday Letter →' : 'Read Your Letter →'}
               </button>
             </div>
           </div>
@@ -108,7 +112,7 @@ export const ViewerCoupons: React.FC<ViewerCouponsProps> = ({ data, onNext }) =>
       {onNext && (
         <div style={{ marginTop: 44 }}>
           <button type="button" className="btn primary" onClick={onNext}>
-            read your letter →
+            {isBirthday ? 'read your birthday letter →' : 'read your letter →'}
           </button>
         </div>
       )}
