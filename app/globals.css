@@ -1812,22 +1812,28 @@ select:focus {
 
 /* Circular Avatar with Gold Ring */
 .cert-avatar-wrap {
-  width: 90px;
-  height: 90px;
-  margin: 8px auto 14px;
+  width: 120px;
+  height: 120px;
+  aspect-ratio: 1 / 1;
+  margin: 10px auto 16px;
   border-radius: 50%;
   padding: 4px;
   background: #ffffff;
-  box-shadow: 0 0 0 3px #dfbe88, 0 6px 16px rgba(0, 0, 0, 0.08);
-  display: grid;
-  place-items: center;
+  box-shadow: 0 0 0 3.5px #dfbe88, 0 8px 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .cert-avatar-img {
   width: 100%;
   height: 100%;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center center;
   display: block;
 }
 
@@ -2522,21 +2528,33 @@ select:focus {
 
 /* Meme Library Modal */
 .meme-modal-box {
-  background: #fff;
+  background: #ffffff;
   border-radius: 24px;
-  width: min(640px, 96vw);
-  max-height: 85vh;
+  width: min(880px, 92vw);
+  max-width: 880px;
+  height: 78vh;
+  max-height: 680px;
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .meme-modal-head {
-  padding: 24px 20px 14px;
+  padding: 18px 20px 12px;
   border-bottom: 1px solid var(--line);
   text-align: center;
+  background: #ffffff;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.meme-modal-head h2 {
+  font-size: 20px;
+  margin: 4px 0 2px;
 }
 
 .meme-filter-tabs {
@@ -2544,7 +2562,7 @@ select:focus {
   flex-wrap: wrap;
   gap: 6px;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .filter-chip {
@@ -2556,66 +2574,118 @@ select:focus {
   font-size: 12px;
   font-weight: 600;
   transition: all 0.2s;
+  cursor: pointer;
+}
+
+.filter-chip:hover {
+  border-color: var(--teal);
+  transform: translateY(-1px);
 }
 
 .filter-chip.active {
   background: var(--teal);
   color: #fff;
   border-color: var(--teal);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .meme-grid {
-  padding: 16px;
+  padding: 16px 20px 28px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
   gap: 12px;
+  flex: 1;
+  box-sizing: border-box;
+  scrollbar-gutter: stable;
 }
 
-@media (max-width: 520px) {
+/* Sleek custom scrollbar */
+.meme-grid::-webkit-scrollbar {
+  width: 7px;
+}
+
+.meme-grid::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+.meme-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 8px;
+}
+
+.meme-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 600px) {
+  .meme-modal-box {
+    width: 95vw;
+    height: 88vh;
+    border-radius: 18px;
+  }
+
+  .meme-modal-head {
+    padding: 14px 12px 8px;
+  }
+
+  .meme-modal-head h2 {
+    font-size: 17px;
+  }
+
   .meme-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+    padding: 10px 12px 24px;
   }
 }
 
 .meme-item {
   background: #fbfefd;
   border: 1.5px solid var(--mint);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .meme-item:hover {
   border-color: var(--teal);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
 }
 
 .meme-item.selected {
   border-color: var(--teal-d);
   background: #eaf4f0;
+  box-shadow: 0 0 0 2px var(--teal-d);
 }
 
 .meme-item-img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 10px;
   display: block;
+  background: #eee;
 }
 
 .meme-item-meta {
   margin-top: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 .meme-item-title {
   font-size: 12px;
   font-weight: 700;
+  color: var(--ink);
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2623,12 +2693,13 @@ select:focus {
 }
 
 .meme-item-cat {
-  font-size: 10px;
+  font-size: 10.5px;
   color: var(--mut);
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-top: 2px;
 }
 
 .meme-select-btn {
@@ -2636,8 +2707,16 @@ select:focus {
   width: 100%;
   background: var(--teal);
   color: #fff;
-  padding: 4px;
-  border-radius: 6px;
-  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  font-size: 11.5px;
   font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.meme-select-btn:hover {
+  background: var(--teal-d);
 }

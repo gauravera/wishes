@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const record = getSurpriseById(id);
+    const record = await getSurpriseById(id);
     if (!record) {
       return NextResponse.json({ error: 'Surprise not found or has expired.' }, { status: 404 });
     }
