@@ -199,7 +199,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       id: sid,
-      shareUrl: `/?id=${sid}`,
+      shareUrl: `/${sid}`,
       expiresAt: expiresAt,
       data: newRecord,
     });

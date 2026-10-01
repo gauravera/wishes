@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { WallSlot } from '@/types/ecard';
 
 interface WallSlotsGridProps {
@@ -21,12 +21,22 @@ export const WallSlotsGrid: React.FC<WallSlotsGridProps> = ({
   onNoteChange,
 }) => {
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [loadingSlotIndex, setLoadingSlotIndex] = useState<number | null>(null);
+
+  const handleCustomUpload = (idx: number, file: File) => {
+    setLoadingSlotIndex(idx);
+    onUploadWallPhoto(idx, file);
+    setTimeout(() => {
+      setLoadingSlotIndex(null);
+    }, 450);
+  };
 
   return (
     <div>
       <div className="wall-slots-grid" style={{ marginTop: 0 }}>
         {wallSlots.map((slot, idx) => {
           const isCustom = slot.type === 'upload';
+          const isLoading = loadingSlotIndex === idx;
           const badgeLabel = isCustom ? '📷 Custom Photo' : `Meme #${slot.memeId || idx + 1}`;
 
           return (
@@ -45,6 +55,28 @@ export const WallSlotsGrid: React.FC<WallSlotsGridProps> = ({
                       (e.target as HTMLImageElement).src = `/library/viral_${idx + 1}.jpg`;
                     }}
                   />
+
+                  {/* Circular Loader for Wall Photo Upload */}
+                  {isLoading && (
+                    <div className="circular-loader-overlay">
+                      <svg className="circular-svg" viewBox="0 0 36 36">
+                        <path
+                          className="circular-bg"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                        <path
+                          className="circular-meter"
+                          strokeDasharray="75, 100"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                      </svg>
+                      <span className="circular-percent-text">Uploading</span>
+                    </div>
+                  )}
+
+                  {isCustom && !isLoading && (
+                    <div className="image-uploaded-badge">✓ Custom</div>
+                  )}
                 </div>
                 <span className="slot-badge-type" title={slot.title}>
                   {slot.title}
@@ -100,7 +132,7 @@ export const WallSlotsGrid: React.FC<WallSlotsGridProps> = ({
                     style={{ display: 'none' }}
                     onChange={(e) => {
                       const f = e.target.files?.[0];
-                      if (f) onUploadWallPhoto(idx, f);
+                      if (f) handleCustomUpload(idx, f);
                     }}
                   />
                 </div>

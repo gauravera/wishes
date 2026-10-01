@@ -7,7 +7,7 @@ export async function uploadLargeAudioInChunks(
   fileName: string = 'audio.mp3',
   onProgress?: (progressPercent: number, statusText: string) => void
 ): Promise<string> {
-  const CHUNK_SIZE = 2 * 1024 * 1024; // 2 MB per chunk
+  const CHUNK_SIZE = 3.2 * 1024 * 1024; // 3.2 MB per chunk for maximum speed and Vercel safety
   const totalSize = file.size;
   const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
   const uploadId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
