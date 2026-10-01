@@ -560,7 +560,7 @@ function ECardApp() {
       }
 
       const result = await res.json();
-      const generatedLink = `${window.location.origin}/?id=${result.id}`;
+      const generatedLink = `${window.location.origin}/${result.id}`;
       setSavedSurpriseId(result.id);
       setShareUrl(generatedLink);
       setShareStatus('done');
