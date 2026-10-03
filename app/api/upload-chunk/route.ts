@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { UploadChunkModel } from '@/lib/models/UploadChunk';
-import { MediaModel } from '@/lib/models/Media';
+import { saveMedia, toBuffer } from '@/lib/media-storage';
 
 export const dynamic = 'force-dynamic';
 
 // Memory cache fallback if MongoDB is not reachable
 declare global {
-  var __MEDIA_CACHE__: Record<string, { fileName: string; mimeType: string; data: Buffer }> | undefined;
   var __CHUNK_CACHE__: Record<string, Record<number, Buffer>> | undefined;
 }
 
-if (!globalThis.__MEDIA_CACHE__) globalThis.__MEDIA_CACHE__ = {};
 if (!globalThis.__CHUNK_CACHE__) globalThis.__CHUNK_CACHE__ = {};
 
 export async function POST(req: NextRequest) {
@@ -22,6 +20,7 @@ export async function POST(req: NextRequest) {
     const totalChunksStr = (formData.get('totalChunks') as string) || '1';
     const fileName = (formData.get('fileName') as string) || 'audio.mp3';
     let mimeType = (formData.get('mimeType') as string) || 'audio/mpeg';
+    if (mimeType === 'audio/mp3') mimeType = 'audio/mpeg';
     const chunkFile = formData.get('chunk') as File | null;
 
     if (!uploadId || !chunkFile) {
@@ -56,32 +55,24 @@ export async function POST(req: NextRequest) {
             .sort({ chunkIndex: 1 })
             .lean();
 
-          const totalBuffers = chunks.map((c) => Buffer.from(c.data));
-          const completeBuffer = Buffer.concat(totalBuffers);
+          if (chunks.length >= totalChunks) {
+            // Convert each chunk safely using toBuffer to prevent BSON Binary TypeError
+            const totalBuffers = chunks.map((c) => toBuffer(c.data));
+            const completeBuffer = Buffer.concat(totalBuffers);
 
-          // Save assembled file in Media collection
-          await MediaModel.findOneAndUpdate(
-            { id: uploadId },
-            {
-              id: uploadId,
-              fileName,
-              mimeType,
-              data: completeBuffer,
-              size: completeBuffer.length,
-              createdAt: new Date(),
-            },
-            { upsert: true, new: true }
-          );
+            // Save assembled file via universal saveMedia (MongoDB + Disk + Memory)
+            const mediaUrl = await saveMedia(uploadId, fileName, mimeType, completeBuffer);
 
-          // Clean up temporary chunks
-          await UploadChunkModel.deleteMany({ uploadId });
+            // Clean up temporary chunks in background
+            UploadChunkModel.deleteMany({ uploadId }).catch(() => {});
 
-          return NextResponse.json({
-            success: true,
-            completed: true,
-            uploadId,
-            mediaUrl: `/api/media/${uploadId}`,
-          });
+            return NextResponse.json({
+              success: true,
+              completed: true,
+              uploadId,
+              mediaUrl,
+            });
+          }
         }
 
         isSavedToMongo = true;
@@ -91,9 +82,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (!isSavedToMongo) {
-      // Memory fallback for local development
+      // Memory / local fallback
       const chunkCache = globalThis.__CHUNK_CACHE__ || (globalThis.__CHUNK_CACHE__ = {});
-      const mediaCache = globalThis.__MEDIA_CACHE__ || (globalThis.__MEDIA_CACHE__ = {});
 
       if (!chunkCache[uploadId]) {
         chunkCache[uploadId] = {};
@@ -107,18 +97,15 @@ export async function POST(req: NextRequest) {
           buffers.push(chunkCache[uploadId][i] || Buffer.alloc(0));
         }
         const completeBuffer = Buffer.concat(buffers);
-        mediaCache[uploadId] = {
-          fileName,
-          mimeType,
-          data: completeBuffer,
-        };
         delete chunkCache[uploadId];
+
+        const mediaUrl = await saveMedia(uploadId, fileName, mimeType, completeBuffer);
 
         return NextResponse.json({
           success: true,
           completed: true,
           uploadId,
-          mediaUrl: `/api/media/${uploadId}`,
+          mediaUrl,
         });
       }
     }

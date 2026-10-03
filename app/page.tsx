@@ -363,20 +363,30 @@ function ECardApp() {
     const song = activeSurpriseData?.musicUrl || '/song.mp3';
     
     // Always sync to the active surprise song (user uploaded custom song or default)
-    if (!aud.src || !aud.src.endsWith(song) && aud.src !== song) {
+    const isCurrent = aud.src && (aud.src.endsWith(song) || aud.src === song);
+    if (!isCurrent) {
       aud.src = song;
       aud.load();
     }
 
     if (aud.paused) {
-      aud.volume = 1.0;
+      try {
+        aud.volume = 1.0;
+      } catch (e) {}
       const playPromise = aud.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => setIsPlayingMusic(true))
           .catch((err) => {
             console.warn('Playback error / waiting for user tap:', err);
-            setIsPlayingMusic(false);
+            // If custom song fails (e.g. 404 or unsupported codec), fall back to default /song.mp3
+            if (aud.src && !aud.src.endsWith('/song.mp3')) {
+              aud.src = '/song.mp3';
+              aud.load();
+              aud.play().then(() => setIsPlayingMusic(true)).catch(() => setIsPlayingMusic(false));
+            } else {
+              setIsPlayingMusic(false);
+            }
           });
       }
     } else {
@@ -674,6 +684,17 @@ function ECardApp() {
         playsInline
         onPlay={() => setIsPlayingMusic(true)}
         onPause={() => setIsPlayingMusic(false)}
+        onError={() => {
+          console.warn('Audio playback error, falling back to /song.mp3');
+          const aud = bgAudioRef.current;
+          if (aud && aud.src && !aud.src.endsWith('/song.mp3')) {
+            aud.src = '/song.mp3';
+            aud.load();
+            if (isPlayingMusic) {
+              aud.play().catch(() => {});
+            }
+          }
+        }}
       />
 
       {/* =========================================================================
@@ -958,7 +979,8 @@ function ECardApp() {
             const aud = bgAudioRef.current;
             const song = activeSurpriseData.musicUrl || '/song.mp3';
             if (aud) {
-              if (!aud.src || !aud.src.endsWith(song) && aud.src !== song) {
+              const isCurrent = aud.src && (aud.src.endsWith(song) || aud.src === song);
+              if (!isCurrent) {
                 aud.src = song;
                 aud.load();
               }

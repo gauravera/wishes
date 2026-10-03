@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "76c45ea9-7c12-45f7-b5a6-7389a5f87b05": {
     "id": "76c45ea9-7c12-45f7-b5a6-7389a5f87b05",
     "eventType": "birthday",
@@ -9,17 +8,6 @@
     "envelopeLetterSub": "Someone made you a little<br>birthday corner on the internet...",
     "certificateBadge": "CERTIFICATE OF BIRTHDAY ROYALTY",
     "certificateTitle": "Certified Birthday Royalty & Love of My Life",
-=======
-  "45786a73-258e-4f47-9437-31e84d0e00ca": {
-    "id": "45786a73-258e-4f47-9437-31e84d0e00ca",
-    "eventType": "boyfriend",
-    "eventTitle": "Boyfriend's Day",
-    "envelopeStamp": "HAPPY BOYFRIEND'S DAY",
-    "envelopeLetterTitle": "Hey You!",
-    "envelopeLetterSub": "I made a little something<br>just for you...",
-    "certificateBadge": "CERTIFICATE OF BOYFRIENDSHIP",
-    "certificateTitle": "Certified Supreme Boyfriend",
->>>>>>> e6dab9caa8d499b58ef0fed5bb5ede0f942e308b
     "certificateTerms": [
       "Birthday Royalty Protocol. 100% pampering, compliments, and love today.",
       "First Cake Slice. Guaranteed first and biggest slice of birthday cake.",
@@ -78,14 +66,9 @@
       "/library/viral_5.jpg",
       "/library/viral_6.jpg"
     ],
-<<<<<<< HEAD
     "payment_id": "FREE-1790872031254",
     "createdAt": "2026-10-01T16:27:12.226Z",
     "expiresAt": "2026-10-02T16:27:12.226Z"
-=======
-    "payment_id": "FREE-1790770083241",
-    "createdAt": "2026-09-30T12:08:03.387Z",
-    "expiresAt": "2026-10-01T12:08:03.387Z"
   },
   "460d1c52-ffc2-436d-aa9b-bbaa2251184e": {
     "id": "460d1c52-ffc2-436d-aa9b-bbaa2251184e",
@@ -157,6 +140,5 @@
     "payment_id": "FREE-1790851864912",
     "createdAt": "2026-10-01T10:51:05.873Z",
     "expiresAt": "2026-10-02T10:51:05.873Z"
->>>>>>> e6dab9caa8d499b58ef0fed5bb5ede0f942e308b
   }
 }

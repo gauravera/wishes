@@ -1,5 +1,5 @@
 /**
- * Client-side helper to upload large files (up to 25MB) in 2MB chunks,
+ * Client-side helper to upload audio files in 2MB chunks with retry capability,
  * completely bypassing Vercel's 4.5MB Serverless Function payload limit.
  */
 export async function uploadLargeAudioInChunks(
@@ -10,11 +10,15 @@ export async function uploadLargeAudioInChunks(
   const CHUNK_SIZE = 2 * 1024 * 1024; // 2 MB per chunk
   const totalSize = file.size;
   const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
-  const uploadId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
-    ? crypto.randomUUID() 
-    : `upload_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const uploadId =
+    typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `upload_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-  const mimeType = file.type || 'audio/mpeg';
+  let mimeType = file.type || 'audio/mpeg';
+  if (mimeType === 'audio/mp3') mimeType = 'audio/mpeg';
+
+  let finalMediaUrl = '';
 
   for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
     const start = chunkIndex * CHUNK_SIZE;
@@ -26,29 +30,47 @@ export async function uploadLargeAudioInChunks(
       onProgress(percent, `Uploading audio track (${percent}%)...`);
     }
 
-    const formData = new FormData();
-    formData.append('uploadId', uploadId);
-    formData.append('chunkIndex', chunkIndex.toString());
-    formData.append('totalChunks', totalChunks.toString());
-    formData.append('fileName', fileName);
-    formData.append('mimeType', mimeType);
-    formData.append('chunk', chunkBlob, `${fileName}.part${chunkIndex}`);
+    let success = false;
+    let lastError = '';
 
-    const res = await fetch('/api/upload-chunk', {
-      method: 'POST',
-      body: formData,
-    });
+    // Retry up to 3 times per chunk for network resilience
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const formData = new FormData();
+        formData.append('uploadId', uploadId);
+        formData.append('chunkIndex', chunkIndex.toString());
+        formData.append('totalChunks', totalChunks.toString());
+        formData.append('fileName', fileName);
+        formData.append('mimeType', mimeType);
+        formData.append('chunk', chunkBlob, `${fileName}.part${chunkIndex}`);
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Failed to upload chunk ${chunkIndex + 1}/${totalChunks}: ${errText}`);
+        const res = await fetch('/api/upload-chunk', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Server returned ${res.status}: ${errText}`);
+        }
+
+        const result = await res.json();
+        if (result.completed && result.mediaUrl) {
+          finalMediaUrl = result.mediaUrl;
+        }
+
+        success = true;
+        break;
+      } catch (err: any) {
+        lastError = err?.message || String(err);
+        await new Promise((r) => setTimeout(r, 800)); // wait before retry
+      }
     }
 
-    const result = await res.json();
-    if (result.completed && result.mediaUrl) {
-      return result.mediaUrl;
+    if (!success) {
+      throw new Error(`Failed to upload chunk ${chunkIndex + 1}/${totalChunks}: ${lastError}`);
     }
   }
 
-  return `/api/media/${uploadId}`;
+  return finalMediaUrl || `/api/media/${uploadId}`;
 }

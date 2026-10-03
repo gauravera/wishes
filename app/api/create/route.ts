@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { saveSurprise, saveUploadedFile } from '@/lib/storage';
+import { saveMedia } from '@/lib/media-storage';
 import { SurpriseData } from '@/types/ecard';
 
 export const dynamic = 'force-dynamic';
@@ -134,7 +135,11 @@ export async function POST(req: NextRequest) {
     let customSongTitle = songTitle;
     const songFile = formData.get('song') as File | null;
     if (!customSongUrl && songFile && songFile.size > 0) {
-      customSongUrl = await saveUploadedFile(sid, songFile, 'song');
+      const songMediaId = crypto.randomUUID();
+      const songBuffer = Buffer.from(await songFile.arrayBuffer());
+      let mimeType = songFile.type || 'audio/mpeg';
+      if (mimeType === 'audio/mp3') mimeType = 'audio/mpeg';
+      customSongUrl = await saveMedia(songMediaId, songFile.name, mimeType, songBuffer);
       if (!customSongTitle) {
         customSongTitle = songFile.name.replace(/\.[^/.]+$/, '');
       }
@@ -144,7 +149,10 @@ export async function POST(req: NextRequest) {
     let voiceNoteUrl: string | null = (formData.get('voiceNoteUrl') as string) || null;
     const voiceFile = formData.get('voiceNote') as File | null;
     if (!voiceNoteUrl && voiceFile && voiceFile.size > 0) {
-      voiceNoteUrl = await saveUploadedFile(sid, voiceFile, 'voice');
+      const voiceMediaId = crypto.randomUUID();
+      const voiceBuffer = Buffer.from(await voiceFile.arrayBuffer());
+      let mimeType = voiceFile.type || 'audio/webm';
+      voiceNoteUrl = await saveMedia(voiceMediaId, 'voice-note.webm', mimeType, voiceBuffer);
     }
 
     // Process Witness Photo

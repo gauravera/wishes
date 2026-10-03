@@ -59,17 +59,31 @@ export const ViewerHero: React.FC<ViewerHeroProps> = ({
     const aud = audioRef?.current;
     if (!aud) return;
 
+    // Immediately read current duration/time if audio is already loaded
+    if (aud.duration && isFinite(aud.duration) && aud.duration > 0) {
+      setDuration(aud.duration);
+      setCurrentTime(aud.currentTime || 0);
+    }
+
     const handleTimeUpdate = () => {
-      setCurrentTime(aud.currentTime);
-      setDuration(aud.duration || 0);
+      setCurrentTime(aud.currentTime || 0);
+      if (aud.duration && isFinite(aud.duration)) {
+        setDuration(aud.duration);
+      }
     };
 
     aud.addEventListener('timeupdate', handleTimeUpdate);
     aud.addEventListener('loadedmetadata', handleTimeUpdate);
+    aud.addEventListener('durationchange', handleTimeUpdate);
+    aud.addEventListener('canplay', handleTimeUpdate);
+    aud.addEventListener('playing', handleTimeUpdate);
 
     return () => {
       aud.removeEventListener('timeupdate', handleTimeUpdate);
       aud.removeEventListener('loadedmetadata', handleTimeUpdate);
+      aud.removeEventListener('durationchange', handleTimeUpdate);
+      aud.removeEventListener('canplay', handleTimeUpdate);
+      aud.removeEventListener('playing', handleTimeUpdate);
     };
   }, [audioRef]);
 
